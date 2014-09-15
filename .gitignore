@@ -1,0 +1,14 @@
+.DS_Store
+*.pyc
+*.pyo
+.virtualenv*
+tmp/**/*
+
+.coverage
+coverage.xml
+nosetests.xml
+
+.pydevproject
+.settings
+
+.idea
