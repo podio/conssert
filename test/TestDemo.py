@@ -8,21 +8,23 @@ class TestDemo(TestCase):
 
     def setUp(self):
         self.programming_languages = \
-[{'languages': {'academical': {'functional': [{'Lisp': {'designer': {'name': 'John McCarthy',
-                                                                     'quote': """
+[{'languages': {'academical': {'functional': [{'name': 'Lisp',
+                                               'designer': {'name': 'John McCarthy',
+                                                            'quote': """
 
                                                                  We understand human mental processes only slightly
                                                                         better than a fish understands swimming.
 
                                                                  """},
-                                                        'features': ['macros',
-                                                                     'recursion',
-                                                                     'garbage collection'],
-                                                        'type system': 'dynamic',
-                                                        'year': 1958}},
+                                               'features': ['macros',
+                                                            'recursion',
+                                                            'garbage collection'],
+                                               'type system': 'dynamic',
+                                               'year': 1958},
 
-                                              {'Haskell': {'designer': {'name': 'Simon Peyton Jones',
-                                                                        'quote': """
+                                              {'name': 'Haskell',
+                                               'designer': {'name': 'Simon Peyton Jones',
+                                                            'quote': """
 
                                                                     You'd like to be able to write a contract for
                                                                                     a function like:
@@ -30,12 +32,13 @@ class TestDemo(TestCase):
                                                                    I'll give you a result that is smaller than zero'.
 
                                                                  """},
-                                                           'features': ['lazy evaluation',
-                                                                        'monads'],
-                                                           'type system': 'static',
-                                                           'year': 1990}}]},
+                                               'features': ['lazy evaluation',
+                                                            'monads'],
+                                               'type system': 'static',
+                                               'year': 1990}]},
 
-                'practical': {'functional': [{'Clojure': {'designer': {'name': 'Rich Hickey',
+                'practical': {'functional': [{'name': 'Clojure',
+                                              'designer': {'name': 'Rich Hickey',
                                                                        'quote': """
 
                                                                  Programming is not about typing... it's about thinking.
@@ -45,65 +48,69 @@ class TestDemo(TestCase):
                                                                        'multimethods',
                                                                        'protocols'],
                                                           'type system': 'dynamic',
-                                                          'year': 2007}}],
+                                                          'year': 2007}],
 
-                              'object oriented': [{'Python': {'designer': {'name': 'Guido van Rossum',
-                                                                           'quote': """
+                              'object oriented': [{'name': 'Python',
+                                                   'designer': {'name': 'Guido van Rossum',
+                                                                'quote': """
 
                                                                  filter(P, S) is almost always written clearer as
                                                                                [x for x in S if P(x)]
 
                                                                  """},
-                                                              'features': ['duck typing',
-                                                                           'GIL',
-                                                                           'multiple inheritance'],
-                                                              'type system': 'dynamic',
-                                                              'year': 1991}},
+                                                   'features': ['duck typing',
+                                                                'GIL',
+                                                                'multiple inheritance'],
+                                                   'type system': 'dynamic',
+                                                   'year': 1991},
 
-                                                  {'Java': {'designer': {'name': 'James Gosling',
-                                                                         'quote': """
+                                                  {'name': 'Java',
+                                                   'designer': {'name': 'James Gosling',
+                                                                'quote': """
 
                                                                  I think everybody has a different answer for
                                                                              what Web services are.
 
 
                                                                  """},
-                                                            'features': ['JIT compiler',
-                                                                         'generics'],
-                                                            'type system': 'static',
-                                                            'year': 1995}}],
+                                                   'features': ['JIT compiler',
+                                                                'generics'],
+                                                   'type system': 'static',
+                                                   'year': 1995}],
 
-                              'procedural': [{'Fortran': {'designer': {'name': 'John Backus',
-                                                                       'quote': """
+                              'procedural': [{'name': 'Fortran',
+                                              'designer': {'name': 'John Backus',
+                                                           'quote': """
 
                                                                  Much of my work has come from being lazy.
 
                                                                  """},
-                                                          'features': ['oldest high-level programming language',
-                                                                       'high-performance computing'],
-                                                          'type system': 'static',
-                                                          'year': 1957}},
+                                              'features': ['oldest high-level programming language',
+                                                           'high-performance computing'],
+                                              'type system': 'static',
+                                              'year': 1957},
 
-                                             {'C': {'designer': {'name': 'Dennis Ritchie',
-                                                                 'quote': """
+                                             {'name': 'C',
+                                              'designer': {'name': 'Dennis Ritchie',
+                                                           'quote': """
 
                                                                  UNIX is basically a simple operating system,
                                                                   but you have to be a genius to understand
                                                                                 the simplicity.
 
                                                                  """},
-                                                    'features': ['weakly typing',
-                                                                 'low level'],
-                                                    'type system': 'static',
-                                                    'year': 1972}}]}}}]
+                                              'features': ['weakly typing',
+                                                           'low level'],
+                                              'type system': 'static',
+                                              'year': 1972}]}}}]
 
     def test_programming(self):
         with Assertable(self.programming_languages) as in_programming:
             # Something equals something
-            in_programming.one("languages academical functional Lisp year").is_(1958)
-            in_programming.some("languages academical functional * year").is_(1990)
+            in_programming.one(["languages", "academical", "functional", ("name", "Lisp"), "year"]).is_(1958)
+            in_programming.some("languages academical functional year").is_(1990)
             self.assertRaises(AssertionError,
-                              in_programming.every(["languages", "*", "functional", "*", "type system"]).is_, "static")
+                              in_programming.every(["languages", "*", "functional", "type system"]).is_, "static")
             # Throws:
             #         AssertionError:
             #         Selection on path ['languages', '*', 'functional', '*', 'type system'] --->
@@ -115,10 +122,10 @@ class TestDemo(TestCase):
             #                 'static'
             #
             #         Not verified (expected = 3, got = 1)
-            in_programming.at_least(2, ["languages", "*", "functional", "*", "type system"]).is_("dynamic")
+            in_programming.at_least(2, ["languages", "*", "functional", "type system"]).is_("dynamic")
 
             # Something contains something
-            object_oriented_features = ["languages", "*", "object oriented", "*", "features"]
+            object_oriented_features = ["languages", "*", "object oriented", "features"]
             in_programming.some(object_oriented_features).has("duck typing")
             in_programming.some(object_oriented_features).has("duck typing", "generics")
             in_programming.some(object_oriented_features).has(["duck typing", "GIL"])
@@ -135,11 +142,13 @@ class TestDemo(TestCase):
             #                 ['duck typing', 'generics']
             #
             #       Not verified (expected = 1, got = 0)
-            in_programming.every(["languages", "*", "*", "*", "type system"]).has("ic")
-            in_programming.one("languages practical procedural Fortran").has({"year": 1957,
-                                                                              "type system": "static"})
-            in_programming.one("languages practical procedural Fortran").has_some_of({"year": 2042,
-                                                                                      "type system": "static"})
+            in_programming.every(["languages", "*", "*", "type system"]).has("ic")
+            in_programming.one(["languages", "practical", "procedural", ("name", "Fortran")]).has(
+                                                                                            {"year": 1957,
+                                                                                             "type system": "static"})
+            in_programming.one(["languages", "practical", "procedural", ("name", "Fortran")]).has_some_of(
+                                                                                    {"year": 2042,
+                                                                                     "type system": "static"})
 
             # More on something equals something
             in_programming.some(object_oriented_features).is_(["JIT compiler", "generics"])
@@ -149,24 +158,23 @@ class TestDemo(TestCase):
                               in_programming.some(object_oriented_features).is_ordered, ["generics", "JIT compiler"])
 
             # Something compares somehow with some property of something else
-            in_programming.exactly(2, "languages * * * year").has(1960, cmp=operator.lt)
-            in_programming.entire("languages * * * year").has(1957, cmp=operator.eq, property=min)
-            in_programming.every("languages * * * features").has(2, cmp=operator.ge, property=len)
+            in_programming.exactly(2, "languages * * year").has(1960, cmp=operator.lt)
+            in_programming.entire("languages * * year").has(1957, cmp=operator.eq, property=min)
+            in_programming.every("languages * * features").has(2, cmp=operator.ge, property=len)
 
             # Convenient methods
-            in_programming.every("languages * * * features").has_no_nones()
-            in_programming.every("languages * * * features").has_not("can fly")
-            in_programming.every("languages * * * features").has_not("can fly", "can drive")
-            in_programming.every("languages * * * year").has_not(datetime.now().year, cmp=operator.gt)
-            in_programming.every("languages * * * year").is_a(int)
-            in_programming.no("languages * * * designer name").is_("Jim Morrison")
-            in_programming.at_most(1, "languages * * * designer name").is_("Denis Ritchie")
-            in_programming.at_most(1, "languages * * * designer name").is_("Denis Ritchie", "James Gosling")
+            in_programming.every("languages * * features").has_no_nones()
+            in_programming.every("languages * * features").has_not("can fly")
+            in_programming.every("languages * * features").has_not("can fly", "can drive")
+            in_programming.every("languages * * year").has_not(datetime.now().year, cmp=operator.gt)
+            in_programming.every("languages * * year").is_a(int)
+            in_programming.no("languages * * designer name").is_("Jim Morrison")
+            in_programming.at_most(1, "languages * * designer name").is_("Denis Ritchie")
+            in_programming.at_most(1, "languages * * designer name").is_("Denis Ritchie", "James Gosling")
             in_programming.some("languages practical functional").is_not_none()
             in_programming.every("languages **").is_not_none()
-            in_programming.some("languages * * * designer quote").matches("(?i)uNiX")
-            in_programming.some("languages * * * designer quote").matches("(?i)uNiX", "work.*lazy")
-            #in_programming.some("languages * * * designer quote").matches(["(?i)uNiX", "simple"], "work.*lazy")
+            in_programming.some("languages * * designer quote").matches("(?i)uNiX")
+            in_programming.some("languages * * designer quote").matches("(?i)uNiX", "work.*lazy")
 
     def test_others(self):
 
