@@ -43,9 +43,10 @@ class assertable:
         selector = assertable._build_selector(self._data, path, min_checks=1, max_checks=2, wrap=True)
         return selector
 
-    def every(self, path=None):
+    def every_existent(self, path=None):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for all the elements in the selection.
+        It does not fail if the path does not exist for all the elements in the object tree.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
@@ -53,7 +54,7 @@ class assertable:
         selector = assertable._build_selector(self._data, path, min_checks=None)
         return selector
 
-    def strictly_every(self, path=None):
+    def every(self, path=None):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for all the elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.

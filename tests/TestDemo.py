@@ -206,13 +206,13 @@ class TestDemo(TestCase):
                                           "profession": "plumber"},
                                          {"name": "Podio",
                                           "says": "I love agile!"}]}) as in_programmers:
+            in_programmers.every_existent("programmers says").has("love")
             in_programmers.every("programmers says").has("love")
-            in_programmers.strictly_every("programmers says").has("love")
             self.assertRaises(AssertionError,
-                              in_programmers.strictly_every, "programmers profession")
+                              in_programmers.every, "programmers profession")
             # Throws:
             #   AssertionError: Attribute profession not found in path ['programmers', 'profession']
-            in_programmers.every("programmers profession").is_not_none()
+            in_programmers.every_existent("programmers profession").is_not_none()
 
             in_programmers.one(["programmers", ("name", "Bob"), "profession"]).is_("plumber")
 

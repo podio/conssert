@@ -378,7 +378,7 @@ class TestConssert(TestCase):
     def test_every_is_a(self):
         with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every("members").is_a(list)
-            in_rock_bands.every("albums year").is_a(int)
+            in_rock_bands.every_existent("albums year").is_a(int)
             in_rock_bands.every("genre").is_a(str)
 
     def test_is_nones(self):
@@ -397,7 +397,7 @@ class TestConssert(TestCase):
         with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has_no_duplicates()
             in_rock_bands.every("genre").has_no_duplicates()
-            self.assertRaises(AssertionError, in_rock_bands.every("albums year").has_no_duplicates)
+            self.assertRaises(AssertionError, in_rock_bands.every_existent("albums year").has_no_duplicates)
 
             in_rock_bands.every("albums *").has_no_duplicates()
             self.assertRaises(AssertionError, in_rock_bands.every("albums **").has_no_duplicates)
@@ -408,7 +408,7 @@ class TestConssert(TestCase):
 
     def test_has_no_nones(self):
         with assertable(self.rock_bands) as in_rock_bands:
-            in_rock_bands.every("albums year").has_no_nones()
+            in_rock_bands.every_existent("albums year").has_no_nones()
             in_rock_bands.every().has_no_nones()
 
         with assertable(self.programming_languages) as in_languages:
@@ -416,10 +416,10 @@ class TestConssert(TestCase):
 
     def test_has_not(self):
         with assertable(self.rock_bands) as in_rock_bands:
-            in_rock_bands.every("albums year").has_not(1984)
+            in_rock_bands.every_existent("albums year").has_not(1984)
             in_rock_bands.every("genre").has_not("Rap")
-            in_rock_bands.every("periods").has_not({1984:"101"})
-            self.assertRaises(AssertionError, in_rock_bands.every("nonsense").has_not, "more nonsense")
+            in_rock_bands.every_existent("periods").has_not({1984:"101"})
+            self.assertRaises(AssertionError, in_rock_bands.every_existent("nonsense").has_not, "more nonsense")
 
     def test_matches(self):
         with assertable(self.rock_bands) as in_rock_bands:
@@ -443,8 +443,8 @@ class TestConssert(TestCase):
 
     def test_strictly_every(self):
         with assertable(self.rock_bands) as in_rock_bands:
-            in_rock_bands.strictly_every("albums title").is_not_none()
-            self.assertRaises(AssertionError, in_rock_bands.strictly_every, "albums songs")
+            in_rock_bands.every("albums title").is_not_none()
+            self.assertRaises(AssertionError, in_rock_bands.every, "albums songs")
 
     def test_expanded(self):
         with assertable(self.programming_languages) as in_languages:
