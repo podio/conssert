@@ -1,7 +1,6 @@
 from unittest import TestCase
 import operator
-
-from conssert import Assertable
+from conssert import assertable
 
 
 class TestConssert(TestCase):
@@ -140,7 +139,7 @@ class TestConssert(TestCase):
                                                                     "type system": "static"}}]}
 
     def test_basic_strings(self):
-        with Assertable("xyz") as in_str:
+        with assertable("xyz") as in_str:
             in_str.one().has("xyz")
             in_str.one().has("x")
             in_str.one().is_("xyz")
@@ -151,7 +150,7 @@ class TestConssert(TestCase):
             in_str.one("**").is_("xyz")
             self.assertRaises(AssertionError, in_str.one("*").has, "xyz")
 
-        with Assertable({"x": "yz"}) as in_str:
+        with assertable({"x": "yz"}) as in_str:
             for sel in ["x", "*", "**"]:
                 in_str.one(sel).has("y")
                 in_str.one(sel).has("y", "z")
@@ -160,7 +159,7 @@ class TestConssert(TestCase):
                 in_str.no(sel).has("zy")
 
     def test_basic_numbers(self):
-        with Assertable(101) as in_number:
+        with assertable(101) as in_number:
             in_number.one().has(101)
             in_number.one().is_(101)
             in_number.entire().is_(101)
@@ -168,14 +167,14 @@ class TestConssert(TestCase):
             in_number.one("**").has(101)
             in_number.one("**").is_(101)
 
-        with Assertable({"x": 101}) as in_number:
+        with assertable({"x": 101}) as in_number:
             for sel in ["x", "*", "**"]:
                 in_number.one(sel).has(101)
                 in_number.one(sel).is_(101)
                 in_number.no(sel).has(1)
 
     def test_basic_dicts(self):
-        with Assertable({"x": {"z1": 1,
+        with assertable({"x": {"z1": 1,
                                "z2": 2},
                          "y": {"z3": 3,
                                "z4": 4}}) as in_dict:
@@ -194,16 +193,16 @@ class TestConssert(TestCase):
             in_dict.entire().is_({"x": {"z1": 1, "z2": 2}, "y": {"z3": 3, "z4": 4}})
 
     def test_basic_lists(self):
-        with Assertable([1, 2, 3]) as in_list:
+        with assertable([1, 2, 3]) as in_list:
             in_list.one().is_(1)
             in_list.one().has(2, 3)
 
-        with Assertable([1, 1, 1]) as in_list:
+        with assertable([1, 1, 1]) as in_list:
             in_list.every().is_(1)
             in_list.every().is_not(2)
             in_list.no().is_(2)
 
-        with Assertable([[1, 2, 3], [4, 5, 6]]) as in_list:
+        with assertable([[1, 2, 3], [4, 5, 6]]) as in_list:
             in_list.some().has(1, 4)
             in_list.some().has([1, 2])
             in_list.no().has([1, 4])
@@ -217,21 +216,21 @@ class TestConssert(TestCase):
             in_list.entire().is_([[4, 5, 6], [1, 2, 3]])
             self.assertRaises(AssertionError, in_list.entire().is_, [[5, 4, 6], [3, 2, 1]])
 
-        with Assertable({"x": [1, 2, 3]}) as in_list:
+        with assertable({"x": [1, 2, 3]}) as in_list:
             in_list.one("x").is_(2, 3)
             in_list.one("x").has(1, 2)
             in_list.no("x").has([1, 2])
 
-        with Assertable({"x": [1, 2, 3]}) as in_list:
+        with assertable({"x": [1, 2, 3]}) as in_list:
             in_list.one("x").is_(3)
 
-        with Assertable([{"x": [1, 2, 3]}]) as in_list:
+        with assertable([{"x": [1, 2, 3]}]) as in_list:
             in_list.one("x").is_([1, 2, 3])
             in_list.one("x").has([1, 2, 3])
             in_list.one("x").has([3, 2])
             in_list.one("x").has(1, 2)
 
-        with Assertable({"x": [1, 2, 3], "y": [4, 5, 6]}) as in_list:
+        with assertable({"x": [1, 2, 3], "y": [4, 5, 6]}) as in_list:
             in_list.some("*").is_([3, 2, 1])
             in_list.some("*").is_([5, 4, 6])
             in_list.some("*").has([1, 2, 3])
@@ -241,48 +240,48 @@ class TestConssert(TestCase):
             in_list.one("*").has(1, 2)
             in_list.one("*").has(6)
 
-        with Assertable({"x": ["flat", "nested"]}) as in_str_list:
+        with assertable({"x": ["flat", "nested"]}) as in_str_list:
             in_str_list.one("x").has("fl", "ed")
             in_str_list.one("x").has("f", "d")  # catch!
             in_str_list.one("x").has(["f", "l"])
             in_str_list.one("x").has(["fl", "at"], ["nest"])
             in_str_list.no("x").has(["f", "d"])
 
-        with Assertable([{"x": [1, 2, 3]}]) as in_list:
+        with assertable([{"x": [1, 2, 3]}]) as in_list:
             in_list.one("x").is_([1, 2, 3])
             in_list.one("*").is_([[1, 2, 3]])
             in_list.one("x").has([1, 2, 3])
             in_list.one("x").has([3, 2])
             in_list.one("x").has(1, 2)
 
-        with Assertable([[1, 2, 3], [4, 5, 6]]) as in_list:
+        with assertable([[1, 2, 3], [4, 5, 6]]) as in_list:
             in_list.one().is_([1, 2, 3])
 
     def test_basic_nones(self):
-        with Assertable(None) as in_nones:
+        with assertable(None) as in_nones:
             in_nones.no().has_no_nones()
 
-        with Assertable([None, None, None, 1]) as in_nones:
+        with assertable([None, None, None, 1]) as in_nones:
             in_nones.some().has_no_nones()
 
-        with Assertable([1, 2, 5, 3, 4]) as in_nones:
+        with assertable([1, 2, 5, 3, 4]) as in_nones:
             in_nones.every().has_no_nones()
 
-        with Assertable([1, 2, None, 3, 4]) as in_nones:
+        with assertable([1, 2, None, 3, 4]) as in_nones:
             self.assertRaises(AssertionError, in_nones.every().has_no_nones)
 
-        with Assertable({1: "z", 2: None}) as in_nones:
+        with assertable({1: "z", 2: None}) as in_nones:
             self.assertRaises(AssertionError, in_nones.every("*").has_no_nones)
 
-        with Assertable({1: "z", 2: None}) as in_nones:
+        with assertable({1: "z", 2: None}) as in_nones:
             self.assertRaises(AssertionError, in_nones.every("**").has_no_nones)
 
     def test_deeply_nested_has(self):
-        with Assertable({"n": {"e": {"s": {"t": {"e": "D"}}}}}) as in_deeply_nested:
+        with assertable({"n": {"e": {"s": {"t": {"e": "D"}}}}}) as in_deeply_nested:
             in_deeply_nested.one("n e s t e").has("D")
 
     def test_some_has(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has(1972)
 
             in_rock_bands.some(["albums", "title"]).has("Made in Japan")
@@ -300,21 +299,21 @@ class TestConssert(TestCase):
             self.assertRaises(AssertionError,  in_rock_bands.some().has, {"band": "Pink Floyd", "genre": "Blues Rock"})
 
     def test_every_has(self):
-        with Assertable(self.numbers) as in_numbers:
+        with assertable(self.numbers) as in_numbers:
             in_numbers.every("sequences *").has(5)
             in_numbers.every("sequences *").has(2, 5)
             in_numbers.every("sequences *").has([2, 5])
             self.assertRaises(AssertionError,  in_numbers.every("sequences *").has, 0)
 
     def test_no_has(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.no("albums songs").has("Stairway to heaven")
             in_rock_bands.no("albums songs").has(["Stairway to heaven", "Smoke on the water"])
             self.assertRaises(AssertionError, in_rock_bands.no("albums songs").has,
                               "Stairway to heaven", "Smoke on the water")
 
     def test_other_combinations_has(self):
-        with Assertable(self.numbers) as in_numbers:
+        with assertable(self.numbers) as in_numbers:
             in_numbers.one("sequences *").has(49)
             in_numbers.at_least(3, "sequences *").has(29)
             in_numbers.at_most(2, "sequences *").has(0)
@@ -322,7 +321,7 @@ class TestConssert(TestCase):
             in_numbers.at_most(0, "**").has(42)
 
     def test_one_filter(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.one([("band", "Pink Floyd"), "periods", 1963]).has("Formation")
             in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has({1963: "Formation", 2005: "Reunion"})
             in_rock_bands.one(["albums", ("title", "The Wall"), "year"]).is_(1979)
@@ -331,7 +330,7 @@ class TestConssert(TestCase):
                 ["albums", ("title", "The dark side of the moon"), "certifications", "United States"]).has("Diamond")
 
     def test_some_has_some_of(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has_some_of([1972, 2045])
             in_rock_bands.some("members").has_some_of(["Clapton", "Page"])
 
@@ -344,7 +343,7 @@ class TestConssert(TestCase):
                               in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has_some_of, {1968: "!", 2000: "!"})
 
     def test_one_is(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.one("formation").is_(1968)
             in_rock_bands.one([("band", "Pink Floyd"), "periods"]).is_({1963: "Formation",
                                                                         1968: "Fame",
@@ -365,37 +364,37 @@ class TestConssert(TestCase):
             self.assertRaises(AssertionError, in_rock_bands.one("albums year").is_, 1973)
 
     def test_is_ordered(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums songs").is_(["Smoke on the water", "Space truckin'"])
             in_rock_bands.some("albums songs").is_(["Space truckin'", "Smoke on the water"])
             in_rock_bands.some("albums songs").is_ordered(["Space truckin'", "Smoke on the water"])
             self.assertRaises(AssertionError,
                               in_rock_bands.some("albums songs").is_ordered, ["Smoke on the water", "Space truckin'"])
 
-        with Assertable(self.numbers) as in_numbers:
+        with assertable(self.numbers) as in_numbers:
             in_numbers.entire("sequences primes").is_([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41])
             in_numbers.entire("sequences Pell").is_([1, 2, 29, 5, 0, 12])
 
     def test_every_is_a(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every("members").is_a(list)
             in_rock_bands.every("albums year").is_a(int)
             in_rock_bands.every("genre").is_a(str)
 
     def test_is_nones(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every("albums title").is_not_none()
             in_rock_bands.no("albums title").is_none()
             in_rock_bands.some(["albums", "uk chart"]).is_not_none()
             in_rock_bands.some(["albums", "uk chart"]).is_none()
 
     def test_is_not(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.one(["albums", ("title", "The Wall"), "year"]).is_not(1981)
             in_rock_bands.one(["albums", ("title", "The Wall"), "title"]).is_not("Other")
 
     def test_has_no_duplicates(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has_no_duplicates()
             in_rock_bands.every("genre").has_no_duplicates()
             self.assertRaises(AssertionError, in_rock_bands.every("albums year").has_no_duplicates)
@@ -403,27 +402,27 @@ class TestConssert(TestCase):
             in_rock_bands.every("albums *").has_no_duplicates()
             self.assertRaises(AssertionError, in_rock_bands.every("albums **").has_no_duplicates)
 
-        with Assertable([1, 1, 1, 1, 1]) as in_ones:
+        with assertable([1, 1, 1, 1, 1]) as in_ones:
             in_ones.at_least(1).has_no_duplicates()
             self.assertRaises(AssertionError, in_ones.at_least(2).has_no_duplicates)
 
     def test_has_no_nones(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every("albums year").has_no_nones()
             in_rock_bands.every().has_no_nones()
 
-        with Assertable(self.programming_languages) as in_languages:
+        with assertable(self.programming_languages) as in_languages:
             in_languages.every().has_no_nones()
 
     def test_has_not(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every("albums year").has_not(1984)
             in_rock_bands.every("genre").has_not("Rap")
             in_rock_bands.every("periods").has_not({1984:"101"})
             self.assertRaises(AssertionError, in_rock_bands.every("nonsense").has_not, "more nonsense")
 
     def test_matches(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums songs").matches("Pigs*", "Dogs*")
             self.assertRaises(AssertionError, in_rock_bands.some("albums songs").matches, "Horses*")
             in_rock_bands.every("genre").matches("\w\sRock")
@@ -431,24 +430,24 @@ class TestConssert(TestCase):
             self.assertRaises(AssertionError, in_rock_bands.every("genre").matches, "^Blues.*")
 
     def test_properties_comparators(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("members").has(5, cmp=operator.eq, property=len)
             in_rock_bands.every("members").has(3, cmp=operator.ge, property=len)
             in_rock_bands.every("genre").has("Rock", cmp=str.__contains__)
 
-        with Assertable(self.numbers) as in_numbers:
+        with assertable(self.numbers) as in_numbers:
             in_numbers.every("**").has(50, cmp=operator.lt)
             in_numbers.one("sequences primes").has(0, cmp=operator.eq, property=lambda x: x % 2)
             in_numbers.every("sequences *").has(29, cmp=operator.ge, property=max)
             in_numbers.exactly(4, "sequences *").has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
 
     def test_strictly_every(self):
-        with Assertable(self.rock_bands) as in_rock_bands:
+        with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.strictly_every("albums title").is_not_none()
             self.assertRaises(AssertionError, in_rock_bands.strictly_every, "albums songs")
 
     def test_expanded(self):
-        with Assertable(self.programming_languages) as in_languages:
+        with assertable(self.programming_languages) as in_languages:
             in_languages.one(["procedural", "Fortran", "type system"]).is_("static")
             in_languages.exactly(2, ["procedural", "*", "type system"]).is_("static")
             in_languages.at_least(2, "* * year").has(60, cmp=operator.lt)

@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 import operator
-from conssert import Assertable, walk
+from conssert import assertable
 
 
 class TestDemo(TestCase):
@@ -105,7 +105,7 @@ class TestDemo(TestCase):
                                               'year': 1972}]}}}]
 
     def test_programming(self):
-        with Assertable(self.programming_languages) as in_programming:
+        with assertable(self.programming_languages) as in_programming:
             # Something equals something
             in_programming.one(["languages", "academical", "functional", ("name", "Lisp"), "year"]).is_(1958)
             in_programming.some("languages academical functional year").is_(1990)
@@ -178,12 +178,12 @@ class TestDemo(TestCase):
 
     def test_others(self):
 
-        with Assertable([[1, 2, 3]]) as in_numbers:
+        with assertable([[1, 2, 3]]) as in_numbers:
             self.assertRaises(AssertionError, in_numbers.one().is_, [[1, 2, 3]])
             in_numbers.one().is_([1, 2, 3])
             in_numbers.entire().is_([[1, 2, 3]])
 
-        with Assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
+        with assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
             in_primes.entire().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
 
             all_modulos = lambda x: [(n, x % n) for n in xrange(1, x + 1)]
@@ -191,14 +191,14 @@ class TestDemo(TestCase):
             is_prime = lambda (div_set, x), _: len(div_set) == 2 and 1 in div_set and x in div_set
             in_primes.every().has("ignore this attribute", cmp=is_prime, property=all_divisibles)
 
-        with Assertable([1, 2, 3, 3]) as in_some_duplicates:
+        with assertable([1, 2, 3, 3]) as in_some_duplicates:
             in_some_duplicates.at_least(3).has_no_duplicates()
             self.assertRaises(AssertionError,
                               in_some_duplicates.every().has_no_duplicates)
             self.assertRaises(AssertionError,
                 in_some_duplicates.entire().has, [1, 2, 3, 3], cmp=operator.eq, property=lambda x: list(set(x)))
 
-        with Assertable({"programmers": [{"name": "Alice",
+        with assertable({"programmers": [{"name": "Alice",
                                           "says": "I love functional programming!",
                                           "profession": "poet"},
                                          {"name": "Bob",
@@ -218,7 +218,3 @@ class TestDemo(TestCase):
 
             # This doesn't work:
             #in_programmers.one(["programmers", ("profession", "plumber"), "says"]).has("monkey")
-
-    def test_print(self):
-        for path in walk(self.programming_languages):
-            print path

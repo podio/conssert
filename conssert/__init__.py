@@ -11,21 +11,12 @@ import re
 import operator
 import sys
 
-
-def walk(obj, _path_so_far=[]):
-    """Returns a list of all the paths in the object tree."""
-    if _list(obj):
-        return reduce(lambda accum, next_node: accum + walk(next_node, _path_so_far), obj, [])
-    elif _dict(obj):
-        return reduce(lambda accum, (current_node, next_node):
-                        accum + walk(next_node, _path_so_far + [current_node]), obj.items(), [])
-    return [_path_so_far + [obj]]
-
+from walker import walk
 
 _identity = lambda x: x
 
 
-class Assertable:
+class assertable:
     """ Context manager for object's content validation.
     """
 
@@ -49,7 +40,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, min_checks=1, max_checks=2, wrap=True)
+        selector = assertable._build_selector(self._data, path, min_checks=1, max_checks=2, wrap=True)
         return selector
 
     def every(self, path=None):
@@ -59,7 +50,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, min_checks=None)
+        selector = assertable._build_selector(self._data, path, min_checks=None)
         return selector
 
     def strictly_every(self, path=None):
@@ -70,7 +61,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, min_checks=None, force_path_present=True)
+        selector = assertable._build_selector(self._data, path, min_checks=None, force_path_present=True)
         return selector
 
     def exactly(self, num_checks, path=None):
@@ -80,7 +71,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, min_checks=num_checks, max_checks=num_checks+1)
+        selector = assertable._build_selector(self._data, path, min_checks=num_checks, max_checks=num_checks+1)
         return selector
 
     def at_least(self, num_checks, path=None):
@@ -90,7 +81,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, min_checks=num_checks)
+        selector = assertable._build_selector(self._data, path, min_checks=num_checks)
         return selector
 
     def at_most(self, num_checks, path=None):
@@ -100,7 +91,7 @@ class Assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = Assertable._build_selector(self._data, path, max_checks=num_checks+1)
+        selector = assertable._build_selector(self._data, path, max_checks=num_checks+1)
         return selector
 
     def one(self, path=None):
@@ -134,12 +125,12 @@ class Assertable:
     @staticmethod
     def _build_selector(obj, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
         if isinstance(path, str):
-            return Assertable._build_selector(obj, path.split(), min_checks, max_checks, force_path_present, wrap)
+            return assertable._build_selector(obj, path.split(), min_checks, max_checks, force_path_present, wrap)
 
-        selection = Assertable._selection(obj, path, force_path_present)
-        selector = _Selector(selection=[selection] if wrap else selection,
+        selection = assertable._selection(obj, path, force_path_present)
+        selector = _selector(selection=[selection] if wrap else selection,
                              path=path,
-                             min_checks=Assertable._min_checks(min_checks, selection),
+                             min_checks=assertable._min_checks(min_checks, selection),
                              max_checks=max_checks,
                              is_wrapped=wrap)
         return selector
@@ -153,17 +144,17 @@ class Assertable:
             _root_path = path
 
         if _super_list(obj):
-            return Assertable._selection(_flatten(obj), path, force_path_present, _root_path)
+            return assertable._selection(_flatten(obj), path, force_path_present, _root_path)
 
         lookup_node, subpath = path[0], path[1:]
         if _tuple(lookup_node):
             (attr, value) = lookup_node
-            return Assertable._selection([item for item in obj if item[attr] == value],
+            return assertable._selection([item for item in obj if item[attr] == value],
                                             subpath, force_path_present, _root_path)
         else:
             try:
-                return Assertable._selection(
-                    Assertable._get(obj, lookup_node, force_path_present), subpath, force_path_present, _root_path)
+                return assertable._selection(
+                    assertable._get(obj, lookup_node, force_path_present), subpath, force_path_present, _root_path)
             except KeyError:
                 raise AssertionError("Attribute {} not found in path {}".format(lookup_node, _root_path))
 
@@ -196,7 +187,7 @@ class Assertable:
             return 1
 
 
-class _Selector():
+class _selector():
 
     def __init__(self,
                  selection,
@@ -289,7 +280,7 @@ class _Selector():
     def has_not(self, *content, **options):
         """Behaves like has(self, *content, **options) but succeeding only when validations hold false."""
         for item in content:
-            compare = options.get("cmp") or _Selector._default_comparator(self._first)
+            compare = options.get("cmp") or _selector._default_comparator(self._first)
             negation_fn = _negate(compare)
             self._has(item, negation_fn, options.get("property", _identity), raw_obj=item)
 
@@ -352,9 +343,9 @@ class _Selector():
         if self._min_checks == 0 and _collection(self._selection) and self._max_checks > len(self._selection):
             return
 
-        found = _Selector._check(self._first, obj, cmp_fn, property_fn, or_)
+        found = _selector._check(self._first, obj, cmp_fn, property_fn, or_)
 
-        return _Selector(selection=self._rest,
+        return _selector(selection=self._rest,
                          path=self._log_path,
                          min_checks=self._min_checks - found,
                          max_checks=self._max_checks - found,
@@ -370,16 +361,16 @@ class _Selector():
     @staticmethod
     def _check(selection_element, content_arg, cmp_fn, property_fn, or_):
         comparable = lambda key=None: property_fn(selection_element.get(key)) if key else property_fn(selection_element)
-        compare = cmp_fn or _Selector._default_comparator(selection_element)
-        return _Selector._check_element(content_arg, compare, comparable, or_)
+        compare = cmp_fn or _selector._default_comparator(selection_element)
+        return _selector._check_element(content_arg, compare, comparable, or_)
 
     @staticmethod
     def _check_element(content_arg, compare, comparable, or_):
         fails = _negate(compare)
         if _list(content_arg):
-            return _Selector._check_list(content_arg, fails, comparable, or_, not or_)
+            return _selector._check_list(content_arg, fails, comparable, or_, not or_)
         elif _dict(content_arg):
-            return _Selector._check_dict(content_arg, fails, comparable, or_, not or_)
+            return _selector._check_dict(content_arg, fails, comparable, or_, not or_)
         return _numeric_bool(compare(comparable(), content_arg))
 
     @staticmethod
