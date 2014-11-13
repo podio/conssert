@@ -7,10 +7,11 @@ setup(
     version="0.1",
     description="Content assertion library for Python",
     url="https://github.com/podio/conssert",
+    download_url="https://github.com/podio/conssert/tarball/0.1",
     author="Juan Alvarez",
-    author_email="juan@podio.com",
+    author_email="juan.afernandez@ymail.com",
     platforms=["any"],
-    keywords="json validation test assertion",
+    keywords=["validation", "test", "unit test", "content assertion"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
