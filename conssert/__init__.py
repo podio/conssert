@@ -283,6 +283,10 @@ class _selector():
             negation_fn = _negate(compare)
             self._has(item, negation_fn, options.get("property", _identity), raw_obj=item)
 
+    def has_length(self, content):
+        """Asserts the length of the selection."""
+        self._has(content, operator.eq, len, raw_obj=content)
+
     def matches(self, *content):
         """Asserts that elements in selection match regular expressions in content."""
         regex_check_fn = lambda expr, pattern: \
