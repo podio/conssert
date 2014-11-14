@@ -192,6 +192,18 @@ class TestConssert(TestCase):
             in_dict.one("**").is_(4)
             in_dict.entire().is_({"x": {"z1": 1, "z2": 2}, "y": {"z3": 3, "z4": 4}})
 
+    def test_deep_dict(self):
+        with assertable({"a": 1,
+                         "m": {"n": 100},
+                         "z": {"x": 10, "y": 20, "w": 30, "u": {"l": 1000}}}) as in_dict:
+            in_dict.one().has({"z": {"x": 10}})
+            in_dict.one().has({"a": 1, "z": {"x": 10}})
+            in_dict.one().has({"a": 1, "z": {"x": 10}})
+            in_dict.one().has({"m": {"n": 100}, "z": {"x": 10, "w": 30}})
+            in_dict.one().has({"a": 1, "z": {"u": {"l": 1000}}})
+            in_dict.no().has({"a": 15, "z": {"u": {"l": 1000}}})
+            in_dict.no().has({"a": 1, "z": {"u": {"l": 1001}}})
+
     def test_basic_lists(self):
         with assertable([1, 2, 3]) as in_list:
             in_list.one().is_(1)

@@ -363,7 +363,7 @@ class _selector():
 
     @staticmethod
     def _check(selection_element, content_arg, cmp_fn, property_fn, or_):
-        comparable = lambda key=None: property_fn(selection_element.get(key)) if key else property_fn(selection_element)
+        comparable = lambda *keys: property_fn(_recursive_get(selection_element, keys))
         compare = cmp_fn or _selector._default_comparator(selection_element)
         return _selector._check_element(content_arg, compare, comparable, or_)
 
@@ -389,6 +389,8 @@ class _selector():
     @staticmethod
     def _check_dict(content_arg, fails, comparable, or_, and_):
         for key, value in content_arg.items():
+            if _dict(value):
+                return _selector._check_dict(value, fails, lambda *root_keys: comparable(key, root_keys), or_, and_)
             if fails(comparable(key), value):
                 if and_:
                     return 0
@@ -401,7 +403,7 @@ class _selector():
         if _list(obj):
             return list.__contains__
         elif _str(obj):
-            return lambda str, char: char == str if char is None else char in str
+            return lambda str_, char: char == str_ if char is None else char in str_
         else:
             return operator.eq
 
@@ -477,3 +479,10 @@ def _split_strings(col):
     safe_split = lambda x: [] if x is None else x.split()
     return [item if _collection(item) else safe_split(item) for item in col]
 
+
+def _recursive_get(dict_, keys):
+    if not _dict(dict_) or not keys:
+        return dict_
+    if not _collection(keys):
+        return dict_.get(keys)
+    return _recursive_get(dict_.get(keys[0]), keys[-1])
