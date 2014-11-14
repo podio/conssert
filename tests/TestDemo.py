@@ -162,19 +162,21 @@ class TestDemo(TestCase):
             in_programming.entire("languages * * year").has(1957, cmp=operator.eq, property=min)
             in_programming.every("languages * * features").has(2, cmp=operator.ge, property=len)
 
-            # Convenient methods
-            in_programming.every("languages * * features").has_no_nones()
-            in_programming.every("languages * * features").has_not("can fly")
-            in_programming.every("languages * * features").has_not("can fly", "can drive")
-            in_programming.every("languages * * year").has_not(datetime.now().year, cmp=operator.gt)
-            in_programming.every("languages * * year").is_a(int)
-            in_programming.no("languages * * designer name").is_("Jim Morrison")
-            in_programming.at_most(1, "languages * * designer name").is_("Denis Ritchie")
-            in_programming.at_most(1, "languages * * designer name").is_("Denis Ritchie", "James Gosling")
             in_programming.some("languages practical functional").is_not_none()
             in_programming.every("languages **").is_not_none()
-            in_programming.some("languages * * designer quote").matches("(?i)uNiX")
-            in_programming.some("languages * * designer quote").matches("(?i)uNiX", "work.*lazy")
+
+    def test_convinient_methods(self):
+        with assertable(self.programming_languages, "languages * *") as in_languages:
+            in_languages.every("features").has_no_nones()
+            in_languages.every("features").has_not("can fly")
+            in_languages.every("features").has_not("can fly", "can drive")
+            in_languages.every("year").has_not(datetime.now().year, cmp=operator.gt)
+            in_languages.every("year").is_a(int)
+            in_languages.no("designer name").is_("Jim Morrison")
+            in_languages.at_most(1, "designer name").is_("Denis Ritchie")
+            in_languages.at_most(1, "designer name").is_("Denis Ritchie", "James Gosling")
+            in_languages.some("designer quote").matches("(?i)uNiX")
+            in_languages.some("designer quote").matches("(?i)uNiX", "work.*lazy")
 
     def test_others(self):
 

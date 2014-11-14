@@ -20,12 +20,15 @@ class assertable:
     """ Context manager for object's content validation.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, prefix_path=[]):
         """
-        Arg:
+        Args:
             data (dict, list): object under test.
+            prefix_path (str, list): path of the object tree under test.
         """
+        # keep both args immutable
         self._data = data
+        self._prefix_path = prefix_path if _list(prefix_path) else prefix_path.split()
 
     def __enter__(self):
         return self
@@ -40,7 +43,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, min_checks=1, max_checks=2, wrap=True)
+        selector = self._build_selector(path or [], min_checks=1, max_checks=2, wrap=True)
         return selector
 
     def every_existent(self, path=None):
@@ -51,7 +54,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, min_checks=None)
+        selector = self._build_selector(path or [], min_checks=None)
         return selector
 
     def every(self, path=None):
@@ -62,7 +65,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, min_checks=None, force_path_present=True)
+        selector = self._build_selector(path or [], min_checks=None, force_path_present=True)
         return selector
 
     def exactly(self, num_checks, path=None):
@@ -72,7 +75,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, min_checks=num_checks, max_checks=num_checks+1)
+        selector = self._build_selector(path or [], min_checks=num_checks, max_checks=num_checks+1)
         return selector
 
     def at_least(self, num_checks, path=None):
@@ -82,7 +85,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, min_checks=num_checks)
+        selector = self._build_selector(path or [], min_checks=num_checks)
         return selector
 
     def at_most(self, num_checks, path=None):
@@ -92,7 +95,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = assertable._build_selector(self._data, path, max_checks=num_checks+1)
+        selector = self._build_selector(path or [], max_checks=num_checks+1)
         return selector
 
     def one(self, path=None):
@@ -122,15 +125,13 @@ class assertable:
         """
         return self.at_most(0, path)
 
-
-    @staticmethod
-    def _build_selector(obj, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
+    def _build_selector(self, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
         if isinstance(path, str):
-            return assertable._build_selector(obj, path.split(), min_checks, max_checks, force_path_present, wrap)
+            return self._build_selector(path.split(), min_checks, max_checks, force_path_present, wrap)
 
-        selection = assertable._selection(obj, path, force_path_present)
+        selection = assertable._selection(self._data, self._prefix_path + path, force_path_present)
         selector = _selector(selection=[selection] if wrap else selection,
-                             path=path,
+                             path=self._prefix_path + path,
                              min_checks=assertable._min_checks(min_checks, selection),
                              max_checks=max_checks,
                              is_wrapped=wrap)

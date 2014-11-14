@@ -455,3 +455,19 @@ class TestConssert(TestCase):
             in_languages.every("**").has_no_nones()
             in_languages.every("functional **").has_no_duplicates()
             in_languages.every(["object oriented", "*", "*"]).has(4, cmp=operator.eq, property=len)
+
+    def test_only_prefix_as_str(self):
+        with assertable(self.rock_bands, "albums title") as in_album_titles:
+            in_album_titles.some().is_("The Wall")
+            in_album_titles.one().matches("Made in Ja")
+            in_album_titles.no().has("Python")
+
+    def test_prefix_as_str(self):
+        with assertable(self.programming_languages, "functional Lisp") as in_lisp:
+            in_lisp.one("year").is_(58)
+            in_lisp.one(["designer", "name"]).is_("John McCarthy")
+
+    def test_prefix_as_lst(self):
+        with assertable(self.programming_languages, ["functional", "Lisp"]) as in_lisp:
+            in_lisp.one("year").is_(58)
+            in_lisp.one(["designer", "name"]).is_("John McCarthy")
