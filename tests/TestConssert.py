@@ -471,3 +471,11 @@ class TestConssert(TestCase):
         with assertable(self.programming_languages, ["functional", "Lisp"]) as in_lisp:
             in_lisp.one("year").is_(58)
             in_lisp.one(["designer", "name"]).is_("John McCarthy")
+
+    def test_path_composition(self):
+        with assertable(self.programming_languages, ["functional"]) as in_functional:
+            in_functional.one("Lisp", "year").is_(58)
+            in_functional.one("Lisp", ["designer", "name"]).matches("John")
+            in_functional.one(["Lisp", "designer"], "name").matches("John")
+            in_functional.one("*", [("type system", "static")], ["designer", "name"]).matches("Simon")
+            in_functional.one(["*", ("type system", "static")], "designer", "name").matches("Simon")

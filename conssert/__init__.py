@@ -36,17 +36,17 @@ class assertable:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def entire(self, path=None):
+    def entire(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], min_checks=1, max_checks=2, wrap=True)
+        selector = self._build_selector(_split_and_reduce(path), min_checks=1, max_checks=2, wrap=True)
         return selector
 
-    def every_existent(self, path=None):
+    def every_existent(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for all the elements in the selection.
         It does not fail if the path does not exist for all the elements in the object tree.
@@ -54,10 +54,10 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], min_checks=None)
+        selector = self._build_selector(_split_and_reduce(path), min_checks=None)
         return selector
 
-    def every(self, path=None):
+    def every(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for all the elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
@@ -65,70 +65,67 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], min_checks=None, force_path_present=True)
+        selector = self._build_selector(_split_and_reduce(path), min_checks=None, force_path_present=True)
         return selector
 
-    def exactly(self, num_checks, path=None):
+    def exactly(self, num_checks, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for exactly num_checks elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], min_checks=num_checks, max_checks=num_checks+1)
+        selector = self._build_selector(_split_and_reduce(path), min_checks=num_checks, max_checks=num_checks+1)
         return selector
 
-    def at_least(self, num_checks, path=None):
+    def at_least(self, num_checks, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for at least num_checks elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], min_checks=num_checks)
+        selector = self._build_selector(_split_and_reduce(path), min_checks=num_checks)
         return selector
 
-    def at_most(self, num_checks, path=None):
+    def at_most(self, num_checks, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for at most num_checks elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(path or [], max_checks=num_checks+1)
+        selector = self._build_selector(_split_and_reduce(path), max_checks=num_checks+1)
         return selector
 
-    def one(self, path=None):
+    def one(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for exactly one elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.exactly(1, path)
+        return self.exactly(1, _split_and_reduce(path))
 
-    def some(self, path=None):
+    def some(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for at least one element in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.at_least(1, path)
+        return self.at_least(1, _split_and_reduce(path))
 
-    def no(self, path=None):
+    def no(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold false for all the elements in the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.at_most(0, path)
+        return self.at_most(0, _split_and_reduce(path))
 
     def _build_selector(self, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
-        if isinstance(path, str):
-            return self._build_selector(path.split(), min_checks, max_checks, force_path_present, wrap)
-
         selection = assertable._selection(self._data, self._prefix_path + path, force_path_present)
         selector = _selector(selection=[selection] if wrap else selection,
                              path=self._prefix_path + path,
@@ -466,3 +463,13 @@ def _negate(fn):
 
 def _expand_recursive(obj):
     return [nodes[-1] for nodes in walk(obj) if nodes]
+
+
+def _split_and_reduce(col):
+    return sum(_split_strings(col), [])
+
+
+def _split_strings(col):
+    safe_split = lambda x: [] if x is None else x.split()
+    return [item if _collection(item) else safe_split(item) for item in col]
+

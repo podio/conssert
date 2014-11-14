@@ -165,7 +165,7 @@ class TestDemo(TestCase):
             in_programming.some("languages practical functional").is_not_none()
             in_programming.every("languages **").is_not_none()
 
-    def test_convinient_methods(self):
+    def test_convenient_methods(self):
         with assertable(self.programming_languages, "languages * *") as in_languages:
             in_languages.every("features").has_no_nones()
             in_languages.every("features").has_not("can fly")
@@ -177,6 +177,7 @@ class TestDemo(TestCase):
             in_languages.at_most(1, "designer name").is_("Denis Ritchie", "James Gosling")
             in_languages.some("designer quote").matches("(?i)uNiX")
             in_languages.some("designer quote").matches("(?i)uNiX", "work.*lazy")
+            in_languages.some(["designer"], "quote").matches("(?i)uNiX", "work.*lazy")
 
     def test_others(self):
 
