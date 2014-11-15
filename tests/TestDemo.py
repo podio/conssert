@@ -159,7 +159,7 @@ class TestDemo(TestCase):
 
             # Something compares somehow with some property of something else
             in_programming.exactly(2, "languages * * year").has(1960, cmp=operator.lt)
-            in_programming.entire("languages * * year").has(1957, cmp=operator.eq, property=min)
+            in_programming("languages * * year").has(1957, cmp=operator.eq, property=min)
             in_programming.every("languages * * features").has(2, cmp=operator.ge, property=len)
 
             in_programming.some("languages practical functional").is_not_none()
@@ -184,10 +184,10 @@ class TestDemo(TestCase):
         with assertable([[1, 2, 3]]) as in_numbers:
             self.assertRaises(AssertionError, in_numbers.one().is_, [[1, 2, 3]])
             in_numbers.one().is_([1, 2, 3])
-            in_numbers.entire().is_([[1, 2, 3]])
+            in_numbers().is_([[1, 2, 3]])
 
         with assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
-            in_primes.entire().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
+            in_primes().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
 
             all_modulos = lambda x: [(n, x % n) for n in xrange(1, x + 1)]
             all_divisibles = lambda x: ([x for (x, m) in all_modulos(x) if m == 0], x)
@@ -199,7 +199,7 @@ class TestDemo(TestCase):
             self.assertRaises(AssertionError,
                               in_some_duplicates.every().has_no_duplicates)
             self.assertRaises(AssertionError,
-                in_some_duplicates.entire().has, [1, 2, 3, 3], cmp=operator.eq, property=lambda x: list(set(x)))
+                in_some_duplicates().has, [1, 2, 3, 3], cmp=operator.eq, property=lambda x: list(set(x)))
 
         with assertable({"programmers": [{"name": "Alice",
                                           "says": "I love functional programming!",

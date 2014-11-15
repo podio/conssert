@@ -36,7 +36,7 @@ class assertable:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def entire(self, *path):
+    def __call__(self, *path, **_):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
         hold true for the selection.
         path might be a string or a list of strings and/or tuples with 2 elements, namely a key and a value.

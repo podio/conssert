@@ -143,8 +143,8 @@ class TestConssert(TestCase):
             in_str.one().has("xyz")
             in_str.one().has("x")
             in_str.one().is_("xyz")
-            in_str.entire().is_("xyz")
-            in_str.entire().has("xyz")
+            in_str().is_("xyz")
+            in_str().has("xyz")
             in_str.no().is_("x")
             in_str.one("**").has("x")
             in_str.one("**").is_("xyz")
@@ -162,7 +162,7 @@ class TestConssert(TestCase):
         with assertable(101) as in_number:
             in_number.one().has(101)
             in_number.one().is_(101)
-            in_number.entire().is_(101)
+            in_number().is_(101)
             in_number.no().has(1)
             in_number.one("**").has(101)
             in_number.one("**").is_(101)
@@ -179,7 +179,7 @@ class TestConssert(TestCase):
                          "y": {"z3": 3,
                                "z4": 4}}) as in_dict:
             in_dict.one("x").is_({"z1": 1, "z2": 2})
-            in_dict.entire("x").is_({"z1": 1, "z2": 2})
+            in_dict("x").is_({"z1": 1, "z2": 2})
             in_dict.one("x").has({"z1": 1, "z2": 2})
             in_dict.one("x").has({"z1": 1}, {"z2": 2})
             in_dict.no("x").has([{"z1": 1}, {"z2": 2}])
@@ -190,7 +190,7 @@ class TestConssert(TestCase):
             in_dict.one("*").has({"z1": 1}, {"z3": 3})
             in_dict.one("**").has(1, 2, 3, 4)
             in_dict.one("**").is_(4)
-            in_dict.entire().is_({"x": {"z1": 1, "z2": 2}, "y": {"z3": 3, "z4": 4}})
+            in_dict().is_({"x": {"z1": 1, "z2": 2}, "y": {"z3": 3, "z4": 4}})
 
     def test_deep_dict(self):
         with assertable({"a": 1,
@@ -225,8 +225,8 @@ class TestConssert(TestCase):
             in_list.one().is_([1, 2, 3])
             in_list.one().is_([6, 4, 5])
 
-            in_list.entire().is_([[4, 5, 6], [1, 2, 3]])
-            self.assertRaises(AssertionError, in_list.entire().is_, [[5, 4, 6], [3, 2, 1]])
+            in_list().is_([[4, 5, 6], [1, 2, 3]])
+            self.assertRaises(AssertionError, in_list().is_, [[5, 4, 6], [3, 2, 1]])
 
         with assertable({"x": [1, 2, 3]}) as in_list:
             in_list.one("x").is_(2, 3)
@@ -384,8 +384,8 @@ class TestConssert(TestCase):
                               in_rock_bands.some("albums songs").is_ordered, ["Smoke on the water", "Space truckin'"])
 
         with assertable(self.numbers) as in_numbers:
-            in_numbers.entire("sequences primes").is_([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41])
-            in_numbers.entire("sequences Pell").is_([1, 2, 29, 5, 0, 12])
+            in_numbers("sequences primes").is_([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41])
+            in_numbers("sequences Pell").is_([1, 2, 29, 5, 0, 12])
 
     def test_every_is_a(self):
         with assertable(self.rock_bands) as in_rock_bands:
