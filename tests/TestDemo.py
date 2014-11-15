@@ -221,3 +221,31 @@ class TestDemo(TestCase):
 
             # This doesn't work:
             #in_programmers.one(["programmers", ("profession", "plumber"), "says"]).has("monkey")
+
+    def test_users(self):
+        with assertable({'users': [
+                {'name': 'Alice',
+                 'mails': ['alice@gmail.com'],
+                 'country': 'UK',
+                 'knows_python': False,
+                 'birth_date': datetime(1987, 01, 06)},
+                {'name': 'Bob',
+                 'mails': ['bob@gmail.com', 'pythonlover@yahoo.com'],
+                 'knows_python': True,
+                 'birth_date': datetime(1982, 04, 22)},
+                {'name': 'Mette',
+                 'mails': [],
+                 'country': 'DK',
+                 'knows_python': True,
+                 'birth_date': datetime(1980, 11, 11)}
+                ]}) as users:
+            users('users').has_length(3)
+            users('users').has_length(1, cmp=operator.gt)
+            users.one(['users', 'name']).is_('Alice')
+            users.one('users name').is_('Alice')
+            users.one('users').has({'name': 'Alice', 'country': 'UK'})
+            users.one('users').has_some_of({'name': 'Alice', 'country': 'IE'})
+            users.one(['users', ('name', 'Alice'), 'knows_python']).is_(False)
+            users.one(['users', ('name', 'Bob'), 'mails']).has('bob@gmail.com')
+            users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])
+            users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])
