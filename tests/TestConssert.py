@@ -446,6 +446,7 @@ class TestConssert(TestCase):
             in_rock_bands.some("members").has(5, cmp=operator.eq, property=len)
             in_rock_bands.some("members").has_length(5)
             in_rock_bands.every("members").has(3, cmp=operator.ge, property=len)
+            in_rock_bands.every("members").has_length(3, cmp=operator.ge)
             in_rock_bands.every("genre").has("Rock", cmp=str.__contains__)
 
         with assertable(self.numbers) as in_numbers:

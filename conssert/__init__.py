@@ -283,9 +283,9 @@ class _selector():
             negation_fn = _negate(compare)
             self._has(item, negation_fn, options.get("property", _identity), raw_obj=item)
 
-    def has_length(self, content):
+    def has_length(self, content, **options):
         """Asserts the length of the selection."""
-        self._has(content, operator.eq, len, raw_obj=content)
+        self._has(content, options.get("cmp", operator.eq), len, raw_obj=content)
 
     def matches(self, *content):
         """Asserts that elements in selection match regular expressions in content."""
