@@ -244,20 +244,21 @@ class TestDemo(TestCase):
                  'birth_date': datetime(1980, 11, 11),
                  'favourite': {'color': 'Green',
                                'number': 7}}]}) as users:
-            users('users').has_length(3)
-            users.one(['users', 'name']).is_('Alice')
-            users.one('users name').is_('Alice', 'Bob')
-            users.one('users').has({'name': 'Alice', 'country': 'UK', 'favourite': {'color': 'Blue'}})
-            users.one('users').has_some_of({'name': 'Alice', 'country': 'IE'})
-            users.one(['users', ('name', 'Alice'), 'knows_python']).is_false()
-            users.one('users mails').has('bob@gmail.com')
-            users.one('users mails').has('bob@gmail.com', 'alice@gmail.com')
-            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'], 'alice@gmail.com')
-            users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])
-            users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])
-            users.every('users favourite number').is_a(int)
-            users.every('* favourite *').evals_true()
-            users.every('**').is_not_none()
+            users('users').has_length(3)  # there are 3 users
+            users.one(['users', 'name']).is_('Alice')  # exactly one user is named Alice
+            users.one('users name').is_('Alice', 'Bob')  # exactly one user is named Alice and another one is Bob
+            users.one('users').has({'name': 'Alice', 'country': 'UK', 'favourite': {'color': 'Blue'}})  # exactly one user has these properties...
+            users.one('users').has_some_of({'name': 'Alice', 'country': 'IE'})  # exactly one user is either named Alice or comes from Ireland
+            users.one(['users', ('name', 'Alice'), 'knows_python']).is_false()  # exactly one user named Alice does not know Python
+            users.one('users mails').has('bob@gmail.com')  # exactly one user has this mail...
+            users.one('users mails').has('bob@gmail.com', 'alice@gmail.com')  # different users has these 2 mails...
+            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'])  # the same user has these 2 mails
+            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'], 'alice@gmail.com')  # voilà!
+            users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])  # Bob has exactly these 2 mails
+            users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])  # Bob has exactly these 2 mails in that order
+            users.every('users favourite number').is_a(int)  # every user's favourite number is an int
+            users.every('users favourite *').evals_true()  # every user's favourite thing is logically true (not None, 0, empty...)
+            users.every('**').is_not_none()  # every value of any property of any user is not none
 
         with assertable({'users': [
                 {'name': 'Alice',
@@ -280,16 +281,16 @@ class TestDemo(TestCase):
                  'birth_date': datetime(1980, 11, 11),
                  'favourite': {'color': 'Green',
                                'number': 7}}]}, 'users') as users:
-            users().has_length(3)
-            users().has(3, cmp=operator.eq, property=len)
-            users().has_length(1, cmp=operator.gt)
-            users().has(1, cmp=operator.gt, property=len)
-            users.every([('name', 'Bob'), 'mails']).matches("[^@]+@[^@]+\.[^@]+")
-            users.every('mails').has_no_duplicates()
-            users.every_existent('country').evals_true()
-            users.some('knows_python').is_true()
-            users.no('favourite color').is_('Yellow')
-            users.every('birth_date').has(20, cmp=operator.gt,
+            users().has_length(3)  # there are 3 users
+            users().has(3, cmp=operator.eq, property=len)  # there are 3 users, the long way
+            users().has_length(1, cmp=operator.gt)  # there are more than 1 user
+            users().has(1, cmp=operator.gt, property=len)  # there are more than 1 user, the long way
+            users.some('knows_python').is_true()  # some users know Python
+            users.no('favourite color').is_('Yellow')  # no users have yellow as favourite color
+            users.every([('name', 'Bob'), 'mails']).matches("[^@]+@[^@]+\.[^@]+")  # every Bob's mail matches the regex
+            users.every('mails').has_no_duplicates()  # there are no duplicate mails
+            users.every_existent('country').evals_true()  # in every user that has a country, that country is logically true
+            users.every('birth_date').has(20, cmp=operator.gt,   # all users are more than 20 years old
                                           property=lambda birth_date: (datetime.now() - birth_date).days / 365)
 
             # users.every('name').is_('Alice')
