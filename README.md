@@ -22,6 +22,9 @@ Conssert verifications run within a context manager, which is initialized with t
 ```python
 from conssert import assertable
 
+...
+
+
 def test_users(self):
     with assertable({'users': [
             {'name': 'Alice',
