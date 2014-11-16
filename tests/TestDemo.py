@@ -228,25 +228,78 @@ class TestDemo(TestCase):
                  'mails': ['alice@gmail.com'],
                  'country': 'UK',
                  'knows_python': False,
-                 'birth_date': datetime(1987, 01, 06)},
+                 'birth_date': datetime(1987, 01, 06),
+                 'favourite': {'color': 'Blue',
+                               'number': 1}},
                 {'name': 'Bob',
                  'mails': ['bob@gmail.com', 'pythonlover@yahoo.com'],
                  'knows_python': True,
-                 'birth_date': datetime(1982, 04, 22)},
+                 'birth_date': datetime(1982, 04, 22),
+                 'favourite': {'color': 'Black',
+                               'number': 42}},
                 {'name': 'Mette',
                  'mails': [],
                  'country': 'DK',
                  'knows_python': True,
-                 'birth_date': datetime(1980, 11, 11)}
-                ]}) as users:
+                 'birth_date': datetime(1980, 11, 11),
+                 'favourite': {'color': 'Green',
+                               'number': 7}}]}) as users:
             users('users').has_length(3)
-            users('users').has_length(1, cmp=operator.gt)
             users.one(['users', 'name']).is_('Alice')
-            users.one('users name').is_('Alice')
-            users.one('users').has({'name': 'Alice', 'country': 'UK'})
+            users.one('users name').is_('Alice', 'Bob')
+            users.one('users').has({'name': 'Alice', 'country': 'UK', 'favourite': {'color': 'Blue'}})
             users.one('users').has_some_of({'name': 'Alice', 'country': 'IE'})
-            users.one(['users', ('name', 'Alice'), 'knows_python']).is_(False)
-            users.one(['users', ('name', 'Bob'), 'mails']).has('bob@gmail.com')
+            users.one(['users', ('name', 'Alice'), 'knows_python']).is_false()
+            users.one('users mails').has('bob@gmail.com')
+            users.one('users mails').has('bob@gmail.com', 'alice@gmail.com')
+            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'], 'alice@gmail.com')
             users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])
             users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])
+            users.every('users favourite number').is_a(int)
+            users.every('* favourite *').evals_true()
+            users.every('**').is_not_none()
 
+        with assertable({'users': [
+                {'name': 'Alice',
+                 'mails': ['alice@gmail.com'],
+                 'country': 'UK',
+                 'knows_python': False,
+                 'birth_date': datetime(1987, 01, 06),
+                 'favourite': {'color': 'Blue',
+                               'number': 1}},
+                {'name': 'Bob',
+                 'mails': ['bob@gmail.com', 'pythonlover@yahoo.com'],
+                 'knows_python': True,
+                 'birth_date': datetime(1982, 04, 22),
+                 'favourite': {'color': 'Black',
+                               'number': 42}},
+                {'name': 'Mette',
+                 'mails': [],
+                 'country': 'DK',
+                 'knows_python': True,
+                 'birth_date': datetime(1980, 11, 11),
+                 'favourite': {'color': 'Green',
+                               'number': 7}}]}, 'users') as users:
+            users().has_length(3)
+            users().has(3, cmp=operator.eq, property=len)
+            users().has_length(1, cmp=operator.gt)
+            users().has(1, cmp=operator.gt, property=len)
+            users.every([('name', 'Bob'), 'mails']).matches("[^@]+@[^@]+\.[^@]+")
+            users.every('mails').has_no_duplicates()
+            users.every_existent('country').evals_true()
+            users.some('knows_python').is_true()
+            users.no('favourite color').is_('Yellow')
+            users.every('birth_date').has(20, cmp=operator.gt,
+                                          property=lambda birth_date: (datetime.now() - birth_date).days / 365)
+
+            # users.every('name').is_('Alice')
+            # AssertionError:
+            # Selection on path ['users', 'name'] --->
+            #
+            #        ['Alice', 'Bob', 'Mette']
+            #
+            # Compared with --->
+            #
+            #        'Alice'
+            #
+            # Not verified (expected = 3, got = 1)
