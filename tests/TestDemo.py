@@ -249,3 +249,4 @@ class TestDemo(TestCase):
             users.one(['users', ('name', 'Bob'), 'mails']).has('bob@gmail.com')
             users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])
             users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])
+
