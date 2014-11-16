@@ -253,10 +253,11 @@ class TestDemo(TestCase):
             users.one('users mails').has('bob@gmail.com')  # exactly one user has this mail...
             users.one('users mails').has('bob@gmail.com', 'alice@gmail.com')  # different users has these 2 mails...
             users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'])  # the same user has these 2 mails
-            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'], 'alice@gmail.com')  # voilà!
+            users.one('users mails').has(['pythonlover@yahoo.com', 'bob@gmail.com'], 'alice@gmail.com')  # voila!
             users.one(['users', ('name', 'Bob'), 'mails']).is_(['pythonlover@yahoo.com', 'bob@gmail.com'])  # Bob has exactly these 2 mails
             users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])  # Bob has exactly these 2 mails in that order
             users.every('users favourite number').is_a(int)  # every user's favourite number is an int
+            users.every(['users', 'favourite'], 'number').is_a(int)  # the same - arguments values are concatenated
             users.every('users favourite *').evals_true()  # every user's favourite thing is logically true (not None, 0, empty...)
             users.every('**').is_not_none()  # every value of any property of any user is not none
 
