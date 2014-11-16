@@ -321,6 +321,22 @@ class _selector():
         for item in content:
             self._is(item, operator.ne)
 
+    def is_true(self):
+        """Asserts that selection elements are True."""
+        self._has(id(True), cmp_fn=operator.eq, property_fn=id, raw_obj=True)
+
+    def is_false(self):
+        """Asserts that selection elements are False."""
+        self._has(id(False), cmp_fn=operator.eq, property_fn=id, raw_obj=False)
+
+    def evals_true(self,):
+        """Asserts that selection elements are logically True."""
+        self._has(id(True), cmp_fn=operator.eq, property_fn=lambda x: id(bool(x)), raw_obj=True)
+
+    def evals_false(self):
+        """Asserts that selection elements are logically False."""
+        self._has(id(False), cmp_fn=operator.eq, property_fn=lambda x: id(bool(x)), raw_obj=False)
+
     def _is(self, obj, cmp_fn):
         if _dict(obj):
             self._has(_unique(obj), cmp_fn=cmp_fn, property_fn=lambda dict_: _unique(dict_), raw_obj=obj)
@@ -337,7 +353,9 @@ class _selector():
             # raises assertion error
             self._capture_err_state(raw_obj or obj)
 
-        if not self._selection:
+        if not self._selection and self._selection is not self._log_selection:
+            # second condition ensure that it is "consuming" the selection and not testing against any logical false
+            # expression (eg: [], None, 0...), in which case it should proceed with verification
             if self._min_checks > 0:
                 # raises assertion error
                 self._capture_err_state(raw_obj or obj)
