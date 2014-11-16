@@ -183,7 +183,7 @@ Actually, the previous example is the short form for:
         users().has(3, cmp=operator.ge, property=len)
 ```
 
-In here we have used a cmp and a property arguments. Property is a function that will be applied to the selection element
+In here we have used a `cmp` and a `property` arguments. `property` is a function that will be applied to the selection element
 *before* comparing to the input argument.
 
 
