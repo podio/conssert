@@ -430,8 +430,8 @@ class TestConssert(TestCase):
         with assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.every_existent("albums year").has_not(1984)
             in_rock_bands.every("genre").has_not("Rap")
-            in_rock_bands.every_existent("periods").has_not({1984:"101"})
-            self.assertRaises(AssertionError, in_rock_bands.every_existent("nonsense").has_not, "more nonsense")
+            in_rock_bands.every_existent("periods").has_not({1984: "101"})
+            in_rock_bands.every_existent("nonsense").has_not("more nonsense")
 
     def test_matches(self):
         with assertable(self.rock_bands) as in_rock_bands:
@@ -493,3 +493,20 @@ class TestConssert(TestCase):
             in_functional.one(["Lisp", "designer"], "name").matches("John")
             in_functional.one("*", [("type system", "static")], ["designer", "name"]).matches("Simon")
             in_functional.one(["*", ("type system", "static")], "designer", "name").matches("Simon")
+
+    def test_booleans(self):
+        with assertable({'a': False, 'b': [], 'c': True, 'd': 1}) as in_tricky_booleans:
+            in_tricky_booleans.one('a').is_false()
+            in_tricky_booleans.no('b').is_false()
+            in_tricky_booleans.one('c').is_true()
+            in_tricky_booleans.no('d').is_true()
+
+    def test_logical_booleans(self):
+        with assertable({'a': False, 'b': [], 'c': True, 'd': 0, 'e': 1, 'f': None, 'g': [2]}) as in_tricky_booleans:
+            in_tricky_booleans.one('a').evals_false()
+            in_tricky_booleans.one('b').evals_false()
+            in_tricky_booleans.one('c').evals_true()
+            in_tricky_booleans.one('d').evals_false()
+            in_tricky_booleans.one('e').evals_true()
+            in_tricky_booleans.one('f').evals_false()
+            in_tricky_booleans.one('g').evals_true()
