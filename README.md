@@ -6,13 +6,12 @@ Conssert is an ultralight Python library to facilitate the verification of arbit
 It provides a declarative syntax to navigate and lookup key/value pairs in nested data structures;
 allowing partial assertions, conditional assertions, check certain properties, and more.
 
-Conssert is designed for simplicity, robustness, and extensibility. Particularly, it avoids index lookups so you can
-easily test changing data (e.g., integration tests with reusable fixtures or system tests that rely on external services).
+Conssert is designed for simplicity, robustness, and extensibility. Particularly, it is well suited for testing changing 
+data (e.g., integration tests with reusable fixtures or system tests that rely on external services).
 
 Conssert is completely agnostic of the testing framework.
 
-It is not a schema validation library. Although is possible to check types with it, Conssert
-is intended for content verification.
+It is not a schema validation library. Although is possible to check types with it, Conssert is intended for content verification.
 
 
 ### Usage.
@@ -50,9 +49,11 @@ def test_users(self):
         users('users').has_length(3)
 ```
 
-A Conssert verification has 2 parts. In the first part you get a selection of the object that you are interested in testing.
-In the second part you assert certain values or properties. In the line above, `users('users')` returns a selection which
-contains the value of the key 'users' and `.has_length(3)` asserts the length of that selection.
+A Conssert verification has 2 parts. In the first part you get a selection (portion) of the object that you are interested 
+in testing. In the second part you assert certain values or properties. 
+In the line above, `users('users')` returns a selection which contains the value of the key 'users' and `.has_length(3)` 
+asserts the length of that selection.
+
 Similarly, you can write:
 
 ```python
@@ -61,7 +62,7 @@ Similarly, you can write:
 ```
 
 The first verification asserts that there is exactly one user named 'Alice' and the second one asserts that there is
-exactly one user named 'Alice' and exactly one other user (a different one) named 'Bob'.
+exactly one user named 'Alice' and one other user (a different one) named 'Bob'.
 
 You can also verify a subset of the properties:
 
@@ -73,14 +74,18 @@ You can also verify a subset of the properties:
 The first verification runs an AND (there is a user named 'Alice', whose country is UK and whose favourite color is blue),
 and the second one runs an OR (there is an user that either is named 'Alice' or her country is Ireland).
 
+
+
 `users.one('users')` returns a selection containing the list of all users and will ensure that the assertion you perform
 on will hold true for one and only one element in the selection. Similarly, `users.one('users name')` will return a
 selection with all the user names, `users.one('users name favourite color')` will return all favourite colors from all the
-users and so on.
+users, and so on.
 
 Note that you can use a list (e.g., `users.one(['users', 'name', 'favourite', 'color'])`) and an arbitrary combination of
 strings and lists (e.g., `users.one('users', ['name', 'favourite'], 'color'])`). All these expressions are equivalent and
 it makes easy to reuse arguments.
+
+
 
 An interesting Conssert feature is that you can filter the selection result by key/value pairs. Lets say that we are only
 interested in Bob and we want to verify that he knows Python. We would write:
@@ -114,7 +119,9 @@ with `is_`. The `is_` method applied on lists doesn't care about ordering, but t
         users.one(['users', ('name', 'Bob'), 'mails']).is_ordered(['bob@gmail.com', 'pythonlover@yahoo.com'])
 ```
 
-The only selectors used so far is `one` and the context manager itself, which happens to be a callable. We have used the
+
+
+The only selectors used so far are `one` and the context manager itself, which happens to be a callable. We have used the
 context manager callable at the beginning to verify the length of the object value.
 
 The difference between `one` and the context manager callable is that the former iterates over the sequence of elements
@@ -128,7 +135,8 @@ elements in the sequence:
         users.every('users favourite number').is_a(int)
 ```
 
-In the example above we make sure that all favourite numbers of all the users are values which type `int`.
+In the example above we make sure that all favourite numbers of all the users are values of type `int`.
+
 If we are interested in both favourite numbers and favourite colors we can use the expansion symbol `*` to cover both:
 
 ```python
@@ -141,6 +149,41 @@ You also can expand all the leaves in the object tree:
 ```python
         users.every('**').is_not_none()  # every value of any property of any user is not none
 ```
+
+
+If a test fails, the error will give you some valuable bits of information:
+
+```python
+        users.every('name').is_('Alice')
+        
+        AssertionError:
+        Selection on path ['users', 'name'] --->
+        
+               ['Alice', 'Bob', 'Mette']
+        
+        Compared with --->
+        
+               'Alice'
+        
+        Not verified (expected = 3, got = 1)
+```
+
+
+There is also an `every_existent` selector which behaves like `every` except that it doesn't complain if the attribute is not
+present. Other selectors are `some`, `no`, and the more generic `at_least`, `at_most`, and `exactly` - which receive as 
+argument the number of valid assertions.
+There are also a bunch of handy methods to match regular expressions, check duplicates, and other common operations:
+
+```python
+        users.every_existent('country').evals_true()  # in every user that has a country, that country is logically true
+        users.some('country').is_not('DK')            # not all countries are DK        
+        users.at_least(2, 'knows_python').is_true()   # at least 2 users know Python
+        users.no('favourite color').is_('Yellow')     # no users have yellow as favourite color
+        users.every('mails').has_no_duplicates()      # there are no duplicate mails
+        users.every([('name', 'Bob'), 'mails']).matches("[^@]+@[^@]+\.[^@]+")  # every Bob's mail matches the regex
+```
+
+
 
 So far we have been repeating the 'users' key in all our examples. We also can add it as a second argument in the context
 manager initialization so all the "paths" in the selection arguments are prefixed by that one:
@@ -171,23 +214,40 @@ manager initialization so all the "paths" in the selection arguments are prefixe
             users().has_length(3)  # we don't need to say users('users').has_length(3)
 ```
 
-Even when we only have 3 users now, our user base might grow and we might prefer to say that there are at least 3 users
-so we don't break our test if the data changes in the future.
+Even when we only have 3 users now, our user base might grow and we might be happier saying that there are at least 3 users.
 The `has_length` method accepts a `cmp` argument in which you can specify a comparator function, so we could write:
 
 ```python
         users().has_length(3, cmp=operator.ge)  # 3 or more users
 ```
 
-You can pass in any function that takes 2 arguments and return a Boolean value. You can use `cmp` with other methods too.
-Actually, the previous example is the short form for:
+You can use `cmp` with `has` too. Actually, the previous example is the short form for:
 
 ```python
         users().has(3, cmp=operator.ge, property=len)
 ```
 
 In here we have used a `cmp` and a `property` arguments. `property` is a function that will be applied to the selection element
-*before* comparing to the input argument.
+*before* comparing to the input argument. When using `property` it is always a good idea to specify a `cmp` function, otherwise 
+Conssert will try to guess a comparator function based on the data types, which might not be what you expect.
+
+
+A few more elaborated examples:
+
+```python
+        # all users are more than 20 years old
+        users.every('birth_date').has(20, cmp=operator.gt, property=lambda birth_date: (datetime.now() - birth_date).days / 365)
+
+    # verify prime numbers
+    with assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
+        in_primes().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
+
+        all_modulos = lambda x: [(n, x % n) for n in xrange(1, x + 1)]
+        all_divisibles = lambda x: ([x for (x, m) in all_modulos(x) if m == 0], x)
+        is_prime = lambda (div_set, x), _: len(div_set) == 2 and 1 in div_set and x in div_set
+        in_primes.every().has("ignore this attribute", cmp=is_prime, property=all_divisibles)
+```
+
 
 
 ### Installation & Requirements.
