@@ -293,6 +293,7 @@ class TestDemo(TestCase):
             users.every_existent('country').evals_true()  # in every user that has a country, that country is logically true
             users.every('birth_date').has(20, cmp=operator.gt,   # all users are more than 20 years old
                                           property=lambda birth_date: (datetime.now() - birth_date).days / 365)
+            users.some('country').is_not('DK')  # not all countries are DK
 
             # users.every('name').is_('Alice')
             # AssertionError:
