@@ -232,6 +232,7 @@ You can use `cmp` with `has` too. Actually, the previous example is the short fo
 
 In here we have used a `cmp` and a `property` arguments. `property` is a function that will be applied to the selection
 *before* comparing it with the input argument. 
+
 When using `property` it is always a good idea to specify a `cmp` function, otherwise Conssert will try to guess a comparator 
 function based on the data types, which might not be what you expect.
 
