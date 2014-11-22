@@ -463,7 +463,7 @@ def _unique(obj, to_tuple=False):
     if _dict(obj):
         return tuplify(set(_to_tuples_recursive(obj.items())))
     elif _list(obj):
-        return tuplify(set(_to_tuples_recursive(obj)))
+        return tuplify(sorted(set(_to_tuples_recursive(obj))))
     else:
         return obj
 
