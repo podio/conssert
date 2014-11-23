@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from unittest import TestCase
 import operator
 from conssert import assertable
@@ -268,6 +270,21 @@ class TestConssert(TestCase):
 
         with assertable([[1, 2, 3], [4, 5, 6]]) as in_list:
             in_list.one().is_([1, 2, 3])
+
+    def test_unicode(self):
+        with assertable({u'danske vokaler': "aeiouyåæø",
+                         "español": {u'child': u'niño', "hello": "hola"},
+                         u'øther': {u'utf-8': u'this_reads_utf-8',
+                                   u'spanish and danish': {u'beer': [u'øl', u'caña']}}}) as in_dict:
+            in_dict.one("español").is_({"hello": "hola", "child": u'niño'})
+            in_dict.one('espa\xc3\xb1ol').is_({"child": u'ni\xf1o', u'hello': u'hola'})
+            in_dict.one(['danske vokaler']).is_('aeiouy\xc3\xa5\xc3\xa6\xc3\xb8')
+            in_dict.one([u'danske vokaler']).is_('aeiouyåæø')
+            in_dict.one([u'danske vokaler']).is_(u'aeiouy\xe5\xe6\xf8'.encode('utf8'))
+            in_dict.one([u'\xf8ther',  "utf-8"]).is_("this_reads_utf-8")
+            in_dict.one(u'øther utf-8').is_(u'this_reads_utf-8')
+            in_dict(['øther'.decode('utf8'), "spanish and danish", 'beer']).is_([u'caña', u'øl'])
+            in_dict([u'øther', "spanish and danish", u'beer']).is_(['caña'.decode('utf8'), 'øl'.decode('utf8')])
 
     def test_basic_nones(self):
         with assertable(None) as in_nones:
