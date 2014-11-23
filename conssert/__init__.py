@@ -341,9 +341,9 @@ class _selector():
         if _dict(obj):
             self._has(_unique(obj), cmp_fn=cmp_fn, property_fn=lambda dict_: _unique(dict_), raw_obj=obj)
         elif _list(obj):
-            self._has(_unique(obj, to_tuple=True),
+            self._has(_unique(obj),
                       cmp_fn=cmp_fn,
-                      property_fn=lambda list_: _unique(list_, to_tuple=True),
+                      property_fn=lambda list_: _unique(list_),
                       raw_obj=obj)
         else:
             self._has(obj, cmp_fn=cmp_fn, raw_obj=obj)
@@ -458,14 +458,13 @@ def _numeric_bool(cond):
     return 1 if cond else 0
 
 
-def _unique(obj, to_tuple=False):
-    tuplify = lambda x: tuple(x) if to_tuple else x
-    if _dict(obj):
-        return tuplify(set(_to_tuples_recursive(obj.items())))
-    elif _list(obj):
-        return tuplify(sorted(set(_to_tuples_recursive(obj))))
+def _unique(col):
+    if _dict(col):
+        return _to_tuples_recursive(col.items())
+    elif _list(col):
+        return tuple(sorted(set(_to_tuples_recursive(col))))
     else:
-        return obj
+        return col
 
 
 def _to_tuples_recursive(col):
