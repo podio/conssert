@@ -1,17 +1,13 @@
 """
-This module provides a context manager to perform validations on JSON-like data structures.
-This is not intended to be used for schema validation, but rather for content assertion.
-
-See examples in TestDemo.py and TestConssert.py
-
+This module provides a context manager to perform validations on complex data structures.
+See examples in TestDemo.py
 """
 
 import pprint
 import re
 import operator
 import sys
-
-from walker import walk
+from navigate import *
 
 _identity = lambda x: x
 
@@ -28,7 +24,7 @@ class assertable:
         """
         # keep both args immutable
         self._data = data
-        self._prefix_path = prefix_path if _list(prefix_path) else prefix_path.split()
+        self._prefix_path = prefix_path if is_list(prefix_path) else prefix_path.split()
 
     def __enter__(self):
         return self
@@ -43,7 +39,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), min_checks=1, max_checks=2, wrap=True)
+        selector = self._build_selector(split_and_reduce(path), min_checks=1, max_checks=2, wrap=True)
         return selector
 
     def every_existent(self, *path):
@@ -54,7 +50,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), min_checks=None)
+        selector = self._build_selector(split_and_reduce(path), min_checks=None)
         return selector
 
     def every(self, *path):
@@ -65,7 +61,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), min_checks=None, force_path_present=True)
+        selector = self._build_selector(split_and_reduce(path), min_checks=None, force_path_present=True)
         return selector
 
     def exactly(self, num_checks, *path):
@@ -75,7 +71,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), min_checks=num_checks, max_checks=num_checks+1)
+        selector = self._build_selector(split_and_reduce(path), min_checks=num_checks, max_checks=num_checks+1)
         return selector
 
     def at_least(self, num_checks, *path):
@@ -85,7 +81,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), min_checks=num_checks)
+        selector = self._build_selector(split_and_reduce(path), min_checks=num_checks)
         return selector
 
     def at_most(self, num_checks, *path):
@@ -95,7 +91,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        selector = self._build_selector(_split_and_reduce(path), max_checks=num_checks+1)
+        selector = self._build_selector(split_and_reduce(path), max_checks=num_checks+1)
         return selector
 
     def one(self, *path):
@@ -105,7 +101,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.exactly(1, _split_and_reduce(path))
+        return self.exactly(1, split_and_reduce(path))
 
     def some(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
@@ -114,7 +110,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.at_least(1, _split_and_reduce(path))
+        return self.at_least(1, split_and_reduce(path))
 
     def no(self, *path):
         """Returns a selection/view of the assertable object specified by path. Validations performed on it must
@@ -123,7 +119,7 @@ class assertable:
         If tuple, selection will be filtered by given key(s) and value(s).
         '*' in the path expands the next level in the selection, and '**' expands recursively.
         """
-        return self.at_most(0, _split_and_reduce(path))
+        return self.at_most(0, split_and_reduce(path))
 
     def _build_selector(self, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
         selection = assertable._selection(self._data, self._prefix_path + path, force_path_present)
@@ -142,46 +138,51 @@ class assertable:
         if _root_path is None:
             _root_path = path
 
-        if _super_list(obj):
-            return assertable._selection(_flatten(obj), path, force_path_present, _root_path)
+        if is_super_list(obj):
+            return assertable._selection(flatten(obj), path, force_path_present, _root_path)
 
         lookup_node, subpath = path[0], path[1:]
-        if _tuple(lookup_node):
+        if is_tuple(lookup_node):
             (attr, value) = lookup_node
-            return assertable._selection([item for item in obj if item[attr] == value],
-                                            subpath, force_path_present, _root_path)
+            filtered_nodes = [item for item in obj if item[attr] == value]
+            return assertable._selection(filtered_nodes, subpath, force_path_present, _root_path)
+
         else:
             try:
-                return assertable._selection(
-                    assertable._get(obj, lookup_node, force_path_present), subpath, force_path_present, _root_path)
+                next_nodes = assertable._get(obj, lookup_node, force_path_present)
+                return assertable._selection(next_nodes, subpath, force_path_present, _root_path)
             except KeyError:
                 raise AssertionError("Attribute {} not found in path {}".format(lookup_node, _root_path))
 
     @staticmethod
     def _get(obj, lookup, force_path_present):
         if lookup == "**":
-            return _expand_recursive(obj)
+            return expand_last_level(obj)
 
-        if _dict(obj):
-            if lookup == "*":
-                return obj.values()
-            elif force_path_present:
-                return obj[lookup]
-            else:
-                return obj.get(lookup, [])
+        elif lookup == "*":
+            return expand_one_level(obj)
+
+        elif is_dict(obj):
+            return assertable._scan_dict(obj, lookup, force_path_present)
+
         else:
-            if lookup == "*":
-                return [item.values() for item in obj if _collection(obj)]
-            else:
-                traversable = lambda x, col: force_path_present or (_collection(col) and x in col)
-                return [item[lookup] for item in obj if traversable(lookup, item)]
+            return assertable._scan_undefined_type(obj, lookup, force_path_present)
+
+    @staticmethod
+    def _scan_dict(obj, lookup, force_path_present):
+        return obj[lookup] if force_path_present else obj.get(lookup, [])
+
+    @staticmethod
+    def _scan_undefined_type(obj, lookup, force_path_present):
+        traversable = lambda x, col: force_path_present or (is_collection(col) and x in col)
+        return [item[lookup] for item in obj if traversable(lookup, item)]
 
     @staticmethod
     def _min_checks(user_defined_min_checks, col):
         if user_defined_min_checks is not None:
             return user_defined_min_checks
-        elif _list(col):
-            return max(1, len(col))
+        elif is_list(col):
+            return len(col)
         else:
             return 1
 
@@ -209,14 +210,14 @@ class _selector():
 
     @property
     def _first(self):
-        if _list(self._selection) and len(self._selection) > 0:
+        if is_juicy_list(self._selection):
             return self._selection[0]
         else:
             return self._selection
 
     @property
     def _rest(self):
-        if _list(self._selection):
+        if is_list(self._selection):
             return self._selection[1:]
         else:
             return []
@@ -269,7 +270,7 @@ class _selector():
 
     def has_no_duplicates(self):
         """Asserts that there are no duplicates in the selection."""
-        if self._min_checks > len(_unique(self._selection)):
+        if self._min_checks > len(unique(self._selection)):
             self._capture_err_state("[Itself]", "   ->   Duplicates found.")
 
     def has_no_nones(self):
@@ -280,7 +281,7 @@ class _selector():
         """Behaves like has(self, *content, **options) but succeeding only when validations hold false."""
         for item in content:
             compare = options.get("cmp") or _selector._default_comparator(self._first)
-            negation_fn = _negate(compare)
+            negation_fn = negate(compare)
             self._has(item, negation_fn, options.get("property", _identity), raw_obj=item)
 
     def has_length(self, content, **options):
@@ -290,7 +291,7 @@ class _selector():
     def matches(self, *content):
         """Asserts that elements in selection match regular expressions in content."""
         regex_check_fn = lambda expr, pattern: \
-            any([len(re.findall(pattern, item)) for item in expr]) if _list(expr) \
+            any([len(re.findall(pattern, item)) for item in expr]) if is_list(expr) \
                 else len(re.findall(pattern, expr)) > 0
         for regex in content:
             self._has(re.compile(regex), cmp_fn=regex_check_fn, raw_obj=regex)
@@ -337,34 +338,31 @@ class _selector():
         """Asserts that selection elements are logically False."""
         self._has(id(False), cmp_fn=operator.eq, property_fn=lambda x: id(bool(x)), raw_obj=False)
 
-    def _is(self, obj, cmp_fn):
-        if _dict(obj):
-            self._has(_unique(obj), cmp_fn=cmp_fn, property_fn=lambda dict_: _unique(dict_), raw_obj=obj)
-        elif _list(obj):
-            self._has(_unique(obj),
-                      cmp_fn=cmp_fn,
-                      property_fn=lambda list_: _unique(list_),
-                      raw_obj=obj)
+    def _is(self, input_arg, cmp_fn):
+        if is_collection(input_arg):
+            # TODO validate tuples and sets
+            self._has(unique(input_arg), cmp_fn=cmp_fn, property_fn=lambda col: unique(col), raw_obj=input_arg)
         else:
-            self._has(obj, cmp_fn=cmp_fn, raw_obj=obj)
+            self._has(input_arg, cmp_fn=cmp_fn, raw_obj=input_arg)
 
-    def _has(self, obj, cmp_fn=None, property_fn=_identity, or_=False, raw_obj=None):
+    def _has(self, input_arg, cmp_fn=None, property_fn=_identity, or_=False, raw_obj=None):
         if self._max_checks == 0:
             # raises assertion error
-            self._capture_err_state(raw_obj or obj)
+            self._capture_err_state(raw_obj or input_arg)
 
         if not self._selection and self._selection is not self._log_selection:
             # second condition ensure that it is "consuming" the selection and not testing against any logical false
             # expression (eg: [], None, 0...), in which case it should proceed with verification
+            # TODO verify trivial cases (e.g. -> with...([]) as... evals false)
             if self._min_checks > 0:
                 # raises assertion error
-                self._capture_err_state(raw_obj or obj)
+                self._capture_err_state(raw_obj or input_arg)
             return
 
-        if self._min_checks == 0 and _collection(self._selection) and self._max_checks > len(self._selection):
+        if self._min_checks == 0 and is_collection(self._selection) and self._max_checks > len(self._selection):
             return
 
-        found = _selector._check(self._first, obj, cmp_fn, property_fn, or_)
+        found = _selector._check(self._first, input_arg, cmp_fn, property_fn, or_)
 
         return _selector(selection=self._rest,
                          path=self._log_path,
@@ -373,133 +371,60 @@ class _selector():
                          is_wrapped=self._log_wrapped,
                          _root_min_check=self._log_min_checks,
                          _root_max_check=self._log_max_checks,
-                         _root_selection=self._log_selection)._has(obj,
+                         _root_selection=self._log_selection)._has(input_arg,
                                                                    cmp_fn=cmp_fn,
                                                                    property_fn=property_fn,
                                                                    or_=or_,
                                                                    raw_obj=raw_obj)
 
     @staticmethod
-    def _check(selection_element, content_arg, cmp_fn, property_fn, or_):
-        comparable = lambda *keys: property_fn(_recursive_get(selection_element, keys))
-        compare = cmp_fn or _selector._default_comparator(selection_element)
-        return _selector._check_element(content_arg, compare, comparable, or_)
+    def _check(current_selection_element, input_arg, cmp_fn, property_fn, or_):
+        current_selection_comparable = lambda *keys: property_fn(multi_get(current_selection_element, keys))
+        comparator = cmp_fn or _selector._default_comparator(current_selection_element)
+        return _selector._check_element(input_arg, comparator, current_selection_comparable, or_)
 
     @staticmethod
-    def _check_element(content_arg, compare, comparable, or_):
-        fails = _negate(compare)
-        if _list(content_arg):
-            return _selector._check_list(content_arg, fails, comparable, or_, not or_)
-        elif _dict(content_arg):
-            return _selector._check_dict(content_arg, fails, comparable, or_, not or_)
-        return _numeric_bool(compare(comparable(), content_arg))
+    def _check_element(input_arg, comparator, current_selection_comparable, or_):
+        fails = negate(comparator)
+        if is_list(input_arg):
+            return _selector._check_list(input_arg, fails, current_selection_comparable, or_, not or_)
+        elif is_dict(input_arg):
+            return _selector._check_dict(input_arg, fails, current_selection_comparable, or_, not or_)
+        return to_numeric_bool(comparator(current_selection_comparable(), input_arg))
 
     @staticmethod
-    def _check_list(content_arg, fails, comparable, or_, and_):
-        for element in content_arg:
-            if fails(comparable(), element):
-                if and_:
-                    return 0
-            elif or_:
-                return 1
-        return _numeric_bool(and_)
+    def _check_list(input_arg, fails, current_selection_comparable, or_, and_):
+        for element in input_arg:
+            rs = _selector._cmp(fails, current_selection_comparable, or_, and_, element)
+            if rs is not None:
+                return rs
+        return to_numeric_bool(and_)
 
     @staticmethod
-    def _check_dict(content_arg, fails, comparable, or_, and_):
-        for key, value in content_arg.items():
-            if _dict(value):
-                return _selector._check_dict(value, fails, lambda *root_keys: comparable(key, root_keys), or_, and_)
-            if fails(comparable(key), value):
-                if and_:
-                    return 0
-            elif or_:
-                return 1
-        return _numeric_bool(and_)
+    def _check_dict(input_arg, fails, current_selection_comparable, or_, and_):
+        for input_key, input_value in input_arg.items():
+            if is_dict(input_value):
+                dict_value_comparable = lambda *root_keys: current_selection_comparable(input_key, root_keys)
+                return _selector._check_dict(input_value, fails, dict_value_comparable, or_, and_)
+            rs = _selector._cmp(fails, current_selection_comparable, or_, and_, input_value, input_key)
+            if rs is not None:
+                return rs
+        return to_numeric_bool(and_)
+
+    @staticmethod
+    def _cmp(fails, current_selection_comparable, or_, and_, current_input_val, key=None):
+        current_selection_val = current_selection_comparable(key) if key is not None else current_selection_comparable()
+        if fails(current_selection_val, current_input_val):
+            if and_:
+                return 0
+        elif or_:
+            return 1
 
     @staticmethod
     def _default_comparator(obj):
-        if _list(obj):
+        if is_list(obj):
             return list.__contains__
-        elif _str(obj):
-            return lambda str_, char: char == str_ if char is None else char in str_
+        elif is_str(obj):
+            return lambda str_, char: str_ == char if char is None else char in str_
         else:
             return operator.eq
-
-
-def _list(obj):
-    return isinstance(obj, list)
-
-
-def _super_list(obj):
-    return isinstance(obj, list) and len(obj) > 0 and isinstance(obj[0], list)
-
-
-def _dict(obj):
-    return isinstance(obj, dict)
-
-
-def _tuple(obj):
-    return isinstance(obj, tuple)
-
-
-def _set(obj):
-    return isinstance(obj, set)
-
-
-def _str(obj):
-    return isinstance(obj, basestring)
-
-
-def _collection(obj):
-    return _list(obj) or _dict(obj) or _tuple(obj)
-
-
-def _numeric_bool(cond):
-    return 1 if cond else 0
-
-
-def _unique(col):
-    if _dict(col):
-        return _to_tuples_recursive(col.items())
-    elif _list(col):
-        return tuple(sorted(set(_to_tuples_recursive(col))))
-    else:
-        return col
-
-
-def _to_tuples_recursive(col):
-    if not _collection(col):
-        return col
-    elif _dict(col):
-        return tuple(_to_tuples_recursive(item) for item in col.items())
-    else:
-        return tuple(_to_tuples_recursive(item) for item in col)
-
-
-def _flatten(col):
-    return [item for sublist in col for item in sublist]
-
-
-def _negate(fn):
-    return lambda *args: not fn(*args)
-
-
-def _expand_recursive(obj):
-    return [nodes[-1] for nodes in walk(obj) if nodes]
-
-
-def _split_and_reduce(col):
-    return sum(_split_strings(col), [])
-
-
-def _split_strings(col):
-    safe_split = lambda x: [] if x is None else x.split()
-    return [item if _collection(item) else safe_split(item) for item in col]
-
-
-def _recursive_get(dict_, keys):
-    if not _dict(dict_) or not keys:
-        return dict_
-    if not _collection(keys):
-        return dict_.get(keys)
-    return _recursive_get(dict_.get(keys[0]), keys[-1])
