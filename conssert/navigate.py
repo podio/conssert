@@ -44,8 +44,8 @@ def negate(fn):
 
 def split_strings(col):
     """Recursively split the strings in col"""
-    safe_split = lambda x: [] if x is None else x.split()
-    return [item if is_collection(item) else safe_split(item) for item in col]
+    maybe_split = lambda x: [] if x is None else x.split()
+    return [item if is_collection(item) else maybe_split(item) for item in col]
 
 
 def split_and_reduce(col):
@@ -75,6 +75,18 @@ def to_tuples(col):
         return tuple(to_tuples(item) for item in col)
 
 
+def to_dict(obj):
+    """Recursively creates a dict from obj attributes and its values"""
+    if is_list(obj):
+        return map(lambda x: to_dict(x), obj)
+    elif hasattr(obj, '__dict__'):
+        return dict([(k, to_dict(v)) for k, v in vars(obj).items()])
+    elif is_dict(obj):
+        return dict([(k, to_dict(v)) for k, v in obj.items()])
+    else:
+        return obj
+
+
 def unique(col):
     """Returns the unique elements in col (recursive)"""
     if is_dict(col):
@@ -94,14 +106,16 @@ def multi_get(dict_, keys):
     return multi_get(dict_.get(keys[0]), keys[-1] if len(keys) > 1 else None)
 
 
-def walk(obj, _path_so_far=[]):
+def walk(obj, unwrap_lists=True, _path_so_far=[]):
     """Returns a list of all the paths in the tree obj"""
-    if isinstance(obj, list):
-        return reduce(lambda accum, next_node: accum + walk(next_node, _path_so_far), obj, [])
-    elif isinstance(obj, dict):
+    if is_dict(obj):
         return reduce(lambda accum, (current_node, next_node):
-                      accum + walk(next_node, _path_so_far + [current_node]), obj.items(), [])
-    return [_path_so_far + [obj]]
+                      accum + walk(next_node, unwrap_lists, _path_so_far + [current_node]), obj.items(), [])
+    elif is_list(obj) and unwrap_lists:
+        return reduce(lambda accum, next_node: accum + walk(next_node, _path_so_far=_path_so_far), obj, [])
+    else:
+        maybe_sort = lambda obj_: sorted(obj) if is_list(obj_) else obj_
+        return [_path_so_far + [maybe_sort(obj)]]
 
 
 def expand_last_level(obj):
@@ -115,3 +129,16 @@ def expand_one_level(obj):
         return obj.values()
     else:
         return [item.values() for item in obj if is_collection(obj)]
+
+
+def diff(dict1, dict2):
+    dict1_tree = walk(dict1, unwrap_lists=False)
+    dict2_tree = walk(dict2, unwrap_lists=False)
+    keys_dict1 = [e[:-1] for e in dict1_tree]
+    keys_dict2 = [e[:-1] for e in dict2_tree]
+    deletions = [x for x in dict1_tree if x[:-1] not in keys_dict2]
+    additions = [x for x in dict2_tree if x[:-1] not in keys_dict1]
+    modifications = [x for x in dict2_tree if x not in dict1_tree and x not in additions]
+    return {'removed': deletions,
+            'added': additions,
+            'changed': modifications}
