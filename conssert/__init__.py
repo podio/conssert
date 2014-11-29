@@ -402,14 +402,20 @@ class _selector():
 
     @staticmethod
     def _check_dict(input_arg, fails, current_selection_comparable, or_, and_):
-        for input_key, input_value in input_arg.items():
-            if is_dict(input_value):
-                dict_value_comparable = lambda *root_keys: current_selection_comparable(input_key, root_keys)
-                return _selector._check_dict(input_value, fails, dict_value_comparable, or_, and_)
+        nested_dicts = dict(filter(lambda (_, v): is_dict(v), input_arg.items()))
+        for input_key, input_value in filter(lambda (k, _): k not in nested_dicts, input_arg.items()):
             rs = _selector._cmp(fails, current_selection_comparable, or_, and_, input_value, input_key)
             if rs is not None:
                 return rs
-        return to_numeric_bool(and_)
+        dict_value_comparable = lambda ninput_key, *root_keys: current_selection_comparable(ninput_key, root_keys)
+        nested_rs = map(lambda (nested_input_key, nested_input_value):
+                        _selector._check_dict(nested_input_value,
+                                              fails,
+                                              partial(dict_value_comparable, nested_input_key),
+                                              or_,
+                                              and_),
+                        nested_dicts.items())
+        return to_numeric_bool(and_, nested_rs)
 
     @staticmethod
     def _cmp(fails, current_selection_comparable, or_, and_, current_input_val, key=None):

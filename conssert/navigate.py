@@ -53,9 +53,16 @@ def split_and_reduce(col):
     return sum(split_strings(col), [])
 
 
-def to_numeric_bool(cond):
-    """Returns 1 if cond is True or 0 otherwise"""
-    return 1 if cond else 0
+def to_numeric_bool(cond, col=None):
+    """If no col is supplied, returns 1 if cond is True or 0 otherwise.
+       If col is supplied returns 1 if cond is True and all elements are True,
+       or if cond is False and any of the elements is True.
+       """
+    if col:
+        fn = all if cond else any
+        return 1 if fn(col) else 0
+    else:
+        return 1 if cond else 0
 
 
 def to_tuples(col):
@@ -79,12 +86,12 @@ def unique(col):
 
 
 def multi_get(dict_, keys):
-    """Looks up keys in dict_"""
+    """Recursively looks up keys in dict_"""
     if not is_dict(dict_) or not keys:
         return dict_
     if not is_collection(keys):
         return dict_.get(keys)
-    return multi_get(dict_.get(keys[0]), keys[-1])
+    return multi_get(dict_.get(keys[0]), keys[-1] if len(keys) > 1 else None)
 
 
 def walk(obj, _path_so_far=[]):

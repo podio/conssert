@@ -527,3 +527,79 @@ class TestConssert(TestCase):
             in_tricky_booleans.one('e').evals_true()
             in_tricky_booleans.one('f').evals_false()
             in_tricky_booleans.one('g').evals_true()
+
+    def test_one_nested_dict(self):
+        with assertable({'a': 1, 'b': 2, 'c': {'z': 10, 'x': 100}}) as in_simple_nested_dict:
+            in_simple_nested_dict.no().has({'b': 5, 'c': {'z': 10}})
+            in_simple_nested_dict.no().has({'a': 5, 'c': {'z': 10}})
+            in_simple_nested_dict.no().has({'a': 1, 'c': {'z': 50}})
+            in_simple_nested_dict.no().has({'a': 5, 'c': {'z': 10, 'x': 100}})
+            in_simple_nested_dict.no().has({'b': 5, 'c': {'x': 100}})
+            in_simple_nested_dict.no().has({'b': 2, 'c': {'x': 50, 'z': 10}})
+            in_simple_nested_dict.no().has({'b': 2, 'c': {'x': 100, 'z': 50}})
+            in_simple_nested_dict.no().has({'a': 1, 'b': 2, 'c': {'x': 100, 'z': 50}})
+            in_simple_nested_dict.one().has({'b': 2, 'c': {'x': 100}})
+            in_simple_nested_dict.one().has({'a': 1, 'b': 2, 'c': {'z': 10}})
+            in_simple_nested_dict.one().has({'b': 2, 'c': {'z': 10, 'x': 100}})
+            in_simple_nested_dict.one().has_some_of({'a': 5, 'c': {'z': 10}})
+            in_simple_nested_dict.one().has_some_of({'a': 1, 'c': {'z': 15}})
+            in_simple_nested_dict.one().has_some_of({'b': 5, 'c': {'z': 10, 'x': 105}})
+            in_simple_nested_dict.one().has_some_of({'a': 5, 'b': 2, 'c': {'z': 10}})
+            in_simple_nested_dict.one().is_({'b': 2, 'a': 1, 'c': {'x': 100, 'z': 10}})
+
+    def test_several_nested_dicts(self):
+        with assertable({'a': 1,
+                         'b': 2,
+                         'c': {'z': 10, 'x': 100},
+                         'd': {'y': 60, 'w': 600}}) as in_several_nested_dicts:
+            in_several_nested_dicts.no().has({'b': 2, 'c': {'z': 10}, 'd': {'y': 70}})
+            in_several_nested_dicts.no().has({'b': 2, 'c': {'z': 20}, 'd': {'y': 60}})
+            in_several_nested_dicts.no().has({'b': 1, 'c': {'z': 10}, 'd': {'y': 60}})
+            in_several_nested_dicts.no().has({'b': 2, 'c': {'z': 20}, 'd': {'y': 60, 'w': 700}})
+            in_several_nested_dicts.no().has({'b': 2, 'c': {'z': 20, 'x': 110}, 'd': {'y': 60}})
+            in_several_nested_dicts.one().has({'b': 2, 'c': {'z': 10}, 'd': {'y': 60}})
+            in_several_nested_dicts.one().has({'a': 1, 'c': {'x': 100}, 'd': {'y': 60, 'w': 600}})
+            in_several_nested_dicts.one().is_({'a': 1,
+                                               'b': 2,
+                                               'c': {'z': 10, 'x': 100},
+                                               'd': {'y': 60, 'w': 600}})
+            in_several_nested_dicts.one().has_some_of({'b': 20, 'c': {'z': 10}, 'd': {'y': 70}})
+            in_several_nested_dicts.one().has_some_of({'b': 20, 'c': {'z': 20}, 'd': {'y': 60}})
+            in_several_nested_dicts.no().has_some_of({'b': 1, 'c': {'z': 13}, 'd': {'y': 63}})
+            in_several_nested_dicts.one().has_some_of({'b': 2, 'c': {'z': 13}, 'd': {'y': 63}})
+            in_several_nested_dicts.one().has_some_of({'b': 2, 'c': {'z': 20}, 'd': {'y': 60, 'w': 700}})
+            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 10}, 'd': {'y': 70, 'w': 700}})
+            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 20, 'x': 100}, 'd': {'y': 80}})
+
+    def test_deep_nested_dict(self):
+        r = {'z': 10, 'x': 100}
+        s = {'y': 40, 'w': 400}
+        t = {'u': 80, 'v': 800}
+        with assertable({'a': 1,
+                         'b': 2,
+                         'c': {'p': r},
+                         'd': {'p': s, 'q': t},
+                         'e': {'p': {'q': [r, s]}}}) as in_deep_nested_dict:
+            in_deep_nested_dict.one().has({'a': 1, 'd': {'p': {'y': 40}}})
+            in_deep_nested_dict.one().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': [r, s]}}})
+            in_deep_nested_dict.one().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'a': 2, 'd': {'p': {'y': 40}}})
+            in_deep_nested_dict.no().has({'a': 1, 'd': {'p': {'y': 50}}})
+            in_deep_nested_dict.no().has({'a': 1, 'd': {'t': {'y': 40}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 25}}, 'e': {'p': {'q': [r, s]}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': [s]}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': s}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': {'y': 40}}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 60, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 500}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 90, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 70, 'w': 400}, 'q': {'u': 80, 'v': 1000}}})
+            in_deep_nested_dict.one().has_some_of({'a': 2, 'd': {'p': {'y': 40}}})
+            in_deep_nested_dict.one().has_some_of({'a': 1, 'd': {'p': {'y': 50}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}}, 'e': {'p': {'q': {'y': 50}}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 50, 'w': 500}, 'q': {'u': 90, 'v': 900}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 50, 'w': 500}, 'q': {'u': 80, 'v': 900}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 500}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'e': {'p': {'q': {'y': 40}}}})
+            in_deep_nested_dict.one('e p q').has({'y': 40})
