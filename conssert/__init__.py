@@ -22,8 +22,9 @@ class assertable:
             data (dict, list): object under test.
             prefix_path (str, list): path of the object tree under test.
         """
-        # keep both args immutable
-        self._data = data
+        # keep all args immutable
+        self._data = to_dict(data)
+        self._original_data = data
         self._prefix_path = prefix_path if is_list(prefix_path) else prefix_path.split()
 
     def __enter__(self):

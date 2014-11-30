@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from functools import partial
 
 
@@ -77,7 +78,7 @@ def to_tuples(col):
 
 def to_dict(obj):
     """Recursively creates a dict from obj attributes and its values"""
-    if is_list(obj):
+    if is_list(obj) or is_tuple(obj) or is_set(obj):
         return map(lambda x: to_dict(x), obj)
     elif hasattr(obj, '__dict__'):
         return dict([(k, to_dict(v)) for k, v in vars(obj).items()])
@@ -89,12 +90,8 @@ def to_dict(obj):
 
 def unique(col):
     """Returns the unique elements in col (recursive)"""
-    if is_dict(col):
-        return to_tuples(col.items())
-    elif is_list(col):
-        return tuple(sorted(set(to_tuples(col))))
-    else:
-        return col
+    unique_elements = to_tuples(col.items()) if is_dict(col) else set(to_tuples(col))
+    return tuple(sorted(unique_elements))
 
 
 def multi_get(dict_, keys):

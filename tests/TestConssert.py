@@ -194,6 +194,45 @@ class TestConssert(TestCase):
             in_dict.one("**").is_(4)
             in_dict().is_({"x": {"z1": 1, "z2": 2}, "y": {"z3": 3, "z4": 4}})
 
+    def test_trivial(self):
+        with assertable([]) as empty_lst:
+            empty_lst().evals_false()
+            empty_lst().is_not_none()
+            empty_lst.every_existent('a').is_('b')
+            empty_lst.one().is_([])
+            empty_lst().is_([])
+
+        with assertable({}) as empty_dict:
+            empty_dict().evals_false()
+            empty_dict().is_not_none()
+            empty_lst.every_existent('a').is_('b')
+            empty_dict.one().is_({})
+            empty_dict().is_({})
+
+        with assertable('') as empty_str:
+            empty_str().evals_false()
+            empty_str().is_not_none()
+            empty_str.every_existent('a').is_('b')
+            empty_str.one().is_('')
+            empty_str().is_('')
+
+        with assertable(None) as none:
+            none().evals_false()
+            none().is_none()
+            none.one().is_(None)
+            none().is_(None)
+
+        with assertable(set([1, 1])) as simple_set:
+            simple_set().has_length(1)
+            simple_set.one().is_(1)
+
+        with assertable((1, 2, 3)) as simple_tuple:
+            simple_tuple().evals_true()
+            simple_tuple().has_length(3)
+            simple_tuple().has(2, 3)
+            simple_tuple().is_((1, 3, 2))
+            simple_tuple().is_ordered((1, 2, 3))
+
     def test_deep_dict(self):
         with assertable({"a": 1,
                          "m": {"n": 100},
@@ -373,7 +412,7 @@ class TestConssert(TestCase):
 
     def test_one_is(self):
         with assertable(self.rock_bands) as in_rock_bands:
-            in_rock_bands.one("formation").is_(1968)
+            #in_rock_bands.one("formation").is_(1968)
             in_rock_bands.one([("band", "Pink Floyd"), "periods"]).is_({1963: "Formation",
                                                                         1968: "Fame",
                                                                         1978: "Waters leadership",
@@ -603,3 +642,26 @@ class TestConssert(TestCase):
             in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 500}, 'q': {'u': 80, 'v': 800}}})
             in_deep_nested_dict.no().has({'e': {'p': {'q': {'y': 40}}}})
             in_deep_nested_dict.one('e p q').has({'y': 40})
+
+    def test_object(self):
+        class Point:
+            pass
+
+        class Segment:
+            def __init__(self, name):
+                self.name = name
+
+        p1 = Point()
+        p1.x, p1.y = 1, 0
+
+        p2 = Point()
+        p2.x, p2.y = 3, 3
+
+        segment = Segment("super-segment")
+        segment.bounds = [p1, p2]
+
+        with assertable(segment) as in_segment:
+            in_segment.one('bounds').has({'x': 1})
+            in_segment('bounds *').has([[3, 4]], cmp=operator.eq, property=lambda (pt1, pt2): map(operator.add, pt1, pt2))
+            in_segment.exactly(2, '**').is_(3)
+            in_segment.one('bounds y').has_some_of([0, 8])
