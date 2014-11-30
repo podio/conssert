@@ -33,8 +33,6 @@ class TestNavigate(TestCase):
         z.z = set([x1, x1])
 
         dicts = to_dict([z, x1])
-        for w in walk(dicts, unwrap_lists=True):
-            print w
 
         with assertable(dicts) as obj_as_dict:
             obj_as_dict.one(['u', 1, 10, 100, 'c']).has([4, 5, 3])
