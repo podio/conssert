@@ -19,13 +19,13 @@ It is not a schema validation library. Although is possible to check types with 
 Conssert verifications run within a context manager, which is initialized with the object under test:
 
 ```python
-from conssert import assertable
+from conssert import Assertable
 
 ...
 
 
 def test_users(self):
-    with assertable({'users': [
+    with Assertable({'users': [
             {'name': 'Alice',
              'mails': ['alice@gmail.com'],
              'country': 'UK',
@@ -192,7 +192,7 @@ So far we have been repeating the 'users' key in all our examples. We also can a
 manager initialization so all the "paths" in the selection arguments are prefixed by that one:
 
 ```python
-        with assertable({'users': [
+        with Assertable({'users': [
                 {'name': 'Alice',
                  'mails': ['alice@gmail.com'],
                  'country': 'UK',
@@ -243,7 +243,7 @@ A few more elaborated examples:
         # all users are more than 20 years old
         users.every('birth_date').has(20, cmp=operator.gt, property=lambda birth_date: (datetime.now() - birth_date).days / 365)
 
-    with assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
+    with Assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
         # verifies ascending order
         in_primes().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
 
