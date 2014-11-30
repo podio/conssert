@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 import operator
-from conssert import assertable
+from conssert import Assertable
 
 
 class TestDemo(TestCase):
@@ -105,7 +105,7 @@ class TestDemo(TestCase):
                                               'year': 1972}]}}}]
 
     def test_programming(self):
-        with assertable(self.programming_languages) as in_programming:
+        with Assertable(self.programming_languages) as in_programming:
             # Something equals something
             in_programming.one(["languages", "academical", "functional", ("name", "Lisp"), "year"]).is_(1958)
             in_programming.some("languages academical functional year").is_(1990)
@@ -166,7 +166,7 @@ class TestDemo(TestCase):
             in_programming.every("languages **").is_not_none()
 
     def test_convenient_methods(self):
-        with assertable(self.programming_languages, "languages * *") as in_languages:
+        with Assertable(self.programming_languages, "languages * *") as in_languages:
             in_languages.every("features").has_no_nones()
             in_languages.every("features").has_not("can fly")
             in_languages.every("features").has_not("can fly", "can drive")
@@ -181,12 +181,12 @@ class TestDemo(TestCase):
 
     def test_others(self):
 
-        with assertable([[1, 2, 3]]) as in_numbers:
+        with Assertable([[1, 2, 3]]) as in_numbers:
             self.assertRaises(AssertionError, in_numbers.one().is_, [[1, 2, 3]])
             in_numbers.one().is_([1, 2, 3])
             in_numbers().is_([[1, 2, 3]])
 
-        with assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
+        with Assertable([2, 3, 5, 7, 11, 13, 17, 19]) as in_primes:
             in_primes().has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
 
             all_modulos = lambda x: [(n, x % n) for n in xrange(1, x + 1)]
@@ -194,14 +194,14 @@ class TestDemo(TestCase):
             is_prime = lambda (div_set, x), _: len(div_set) == 2 and 1 in div_set and x in div_set
             in_primes.every().has("ignore this attribute", cmp=is_prime, property=all_divisibles)
 
-        with assertable([1, 2, 3, 3]) as in_some_duplicates:
+        with Assertable([1, 2, 3, 3]) as in_some_duplicates:
             in_some_duplicates.at_least(3).has_no_duplicates()
             self.assertRaises(AssertionError,
                               in_some_duplicates.every().has_no_duplicates)
             self.assertRaises(AssertionError,
                 in_some_duplicates().has, [1, 2, 3, 3], cmp=operator.eq, property=lambda x: list(set(x)))
 
-        with assertable({"programmers": [{"name": "Alice",
+        with Assertable({"programmers": [{"name": "Alice",
                                           "says": "I love functional programming!",
                                           "profession": "poet"},
                                          {"name": "Bob",
@@ -223,7 +223,7 @@ class TestDemo(TestCase):
             #in_programmers.one(["programmers", ("profession", "plumber"), "says"]).has("monkey")
 
     def test_users(self):
-        with assertable({'users': [
+        with Assertable({'users': [
                 {'name': 'Alice',
                  'mails': ['alice@gmail.com'],
                  'country': 'UK',
@@ -261,7 +261,7 @@ class TestDemo(TestCase):
             users.every('users favourite *').evals_true()  # every user's favourite thing is logically true (not None, 0, empty...)
             users.every('**').is_not_none()  # every value of any property of any user is not none
 
-        with assertable({'users': [
+        with Assertable({'users': [
                 {'name': 'Alice',
                  'mails': ['alice@gmail.com'],
                  'country': 'UK',

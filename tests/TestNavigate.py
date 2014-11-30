@@ -1,5 +1,5 @@
 from unittest import TestCase
-from conssert import assertable
+from conssert import Assertable
 from navigate import *
 
 
@@ -34,7 +34,7 @@ class TestNavigate(TestCase):
 
         dicts = to_dict([z, x1])
 
-        with assertable(dicts) as obj_as_dict:
+        with Assertable(dicts) as obj_as_dict:
             obj_as_dict.one(['u', 1, 10, 100, 'c']).has([4, 5, 3])
             obj_as_dict.one(['u', 1, 10, 100, 'c']).has([4, 5])
             obj_as_dict.one(['u', 1, 10, 100]).has({'c': [3, 4, 5]})

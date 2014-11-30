@@ -12,7 +12,7 @@ from navigate import *
 _identity = lambda x: x
 
 
-class assertable:
+class Assertable:
     """ Context manager for object's content validation.
     """
 
@@ -123,10 +123,10 @@ class assertable:
         return self.at_most(0, split_and_reduce(path))
 
     def _build_selector(self, path, min_checks=0, max_checks=sys.maxint, force_path_present=False, wrap=False):
-        selection = assertable._selection(self._data, self._prefix_path + path, force_path_present)
-        selector = _selector(selection=[selection] if wrap else selection,
+        selection = Assertable._selection(self._data, self._prefix_path + path, force_path_present)
+        selector = Selector(selection=[selection] if wrap else selection,
                              path=self._prefix_path + path,
-                             min_checks=assertable._min_checks(min_checks, selection),
+                             min_checks=Assertable._min_checks(min_checks, selection),
                              max_checks=max_checks,
                              is_wrapped=wrap)
         return selector
@@ -140,18 +140,18 @@ class assertable:
             _root_path = path
 
         if is_super_list(obj):
-            return assertable._selection(flatten(obj), path, force_path_present, _root_path)
+            return Assertable._selection(flatten(obj), path, force_path_present, _root_path)
 
         lookup_node, subpath = path[0], path[1:]
         if is_tuple(lookup_node):
             (attr, value) = lookup_node
             filtered_nodes = [item for item in obj if item[attr] == value]
-            return assertable._selection(filtered_nodes, subpath, force_path_present, _root_path)
+            return Assertable._selection(filtered_nodes, subpath, force_path_present, _root_path)
 
         else:
             try:
-                next_nodes = assertable._get(obj, lookup_node, force_path_present)
-                return assertable._selection(next_nodes, subpath, force_path_present, _root_path)
+                next_nodes = Assertable._get(obj, lookup_node, force_path_present)
+                return Assertable._selection(next_nodes, subpath, force_path_present, _root_path)
             except KeyError:
                 raise AssertionError("Attribute {} not found in path {}".format(lookup_node, _root_path))
 
@@ -164,10 +164,10 @@ class assertable:
             return expand_one_level(obj)
 
         elif is_dict(obj):
-            return assertable._scan_dict(obj, lookup, force_path_present)
+            return Assertable._scan_dict(obj, lookup, force_path_present)
 
         else:
-            return assertable._scan_undefined_type(obj, lookup, force_path_present)
+            return Assertable._scan_undefined_type(obj, lookup, force_path_present)
 
     @staticmethod
     def _scan_dict(obj, lookup, force_path_present):
@@ -188,7 +188,7 @@ class assertable:
             return 1
 
 
-class _selector():
+class Selector():
 
     def __init__(self,
                  selection,
@@ -281,7 +281,7 @@ class _selector():
     def has_not(self, *content, **options):
         """Behaves like has(self, *content, **options) but succeeding only when validations hold false."""
         for item in content:
-            compare = options.get("cmp") or _selector._default_comparator(self._first)
+            compare = options.get("cmp") or Selector._default_comparator(self._first)
             negation_fn = negate(compare)
             self._has(item, negation_fn, options.get("property", _identity), raw_obj=item)
 
@@ -363,9 +363,9 @@ class _selector():
         if self._min_checks == 0 and is_collection(self._selection) and self._max_checks > len(self._selection):
             return
 
-        found = _selector._check(self._first, input_arg, cmp_fn, property_fn, or_)
+        found = Selector._check(self._first, input_arg, cmp_fn, property_fn, or_)
 
-        return _selector(selection=self._rest,
+        return Selector(selection=self._rest,
                          path=self._log_path,
                          min_checks=self._min_checks - found,
                          max_checks=self._max_checks - found,
@@ -381,22 +381,22 @@ class _selector():
     @staticmethod
     def _check(current_selection_element, input_arg, cmp_fn, property_fn, or_):
         current_selection_comparable = lambda *keys: property_fn(multi_get(current_selection_element, keys))
-        comparator = cmp_fn or _selector._default_comparator(current_selection_element)
-        return _selector._check_element(input_arg, comparator, current_selection_comparable, or_)
+        comparator = cmp_fn or Selector._default_comparator(current_selection_element)
+        return Selector._check_element(input_arg, comparator, current_selection_comparable, or_)
 
     @staticmethod
     def _check_element(input_arg, comparator, current_selection_comparable, or_):
         fails = negate(comparator)
         if is_list(input_arg):
-            return _selector._check_list(input_arg, fails, current_selection_comparable, or_, not or_)
+            return Selector._check_list(input_arg, fails, current_selection_comparable, or_, not or_)
         elif is_dict(input_arg):
-            return _selector._check_dict(input_arg, fails, current_selection_comparable, or_, not or_)
+            return Selector._check_dict(input_arg, fails, current_selection_comparable, or_, not or_)
         return to_numeric_bool(comparator(current_selection_comparable(), input_arg))
 
     @staticmethod
     def _check_list(input_arg, fails, current_selection_comparable, or_, and_):
         for element in input_arg:
-            rs = _selector._cmp(fails, current_selection_comparable, or_, and_, element)
+            rs = Selector._cmp(fails, current_selection_comparable, or_, and_, element)
             if rs is not None:
                 return rs
         return to_numeric_bool(and_)
@@ -405,12 +405,12 @@ class _selector():
     def _check_dict(input_arg, fails, current_selection_comparable, or_, and_):
         nested_dicts = dict(filter(lambda (_, v): is_dict(v), input_arg.items()))
         for input_key, input_value in filter(lambda (k, _): k not in nested_dicts, input_arg.items()):
-            rs = _selector._cmp(fails, current_selection_comparable, or_, and_, input_value, input_key)
+            rs = Selector._cmp(fails, current_selection_comparable, or_, and_, input_value, input_key)
             if rs is not None:
                 return rs
         dict_value_comparable = lambda ninput_key, *root_keys: current_selection_comparable(ninput_key, root_keys)
         nested_rs = map(lambda (nested_input_key, nested_input_value):
-                        _selector._check_dict(nested_input_value,
+                        Selector._check_dict(nested_input_value,
                                               fails,
                                               partial(dict_value_comparable, nested_input_key),
                                               or_,
