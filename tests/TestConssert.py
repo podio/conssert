@@ -323,7 +323,8 @@ class TestConssert(TestCase):
             in_dict.one([u'\xf8ther',  "utf-8"]).is_("this_reads_utf-8")
             in_dict.one(u'øther utf-8').is_(u'this_reads_utf-8')
             in_dict(['øther'.decode('utf8'), "spanish and danish", 'beer']).is_([u'caña', u'øl'])
-            in_dict([u'øther', "spanish and danish", u'beer']).is_(['caña'.decode('utf8'), 'øl'.decode('utf8')])
+            in_dict([u'øther', "spanish and danish", u'beer']).is_(['caña'.decode('utf8'),
+                                                                    'øl'.decode('utf8')])
 
     def test_basic_nones(self):
         with Assertable(None) as in_nones:
@@ -354,17 +355,21 @@ class TestConssert(TestCase):
 
             in_rock_bands.some(["albums", "title"]).has("Made in Japan")
             in_rock_bands.some(["albums", "title"]).has("Made in Japan", "The Wall")
-            self.assertRaises(AssertionError, in_rock_bands.some(["albums", "title"]).has, ["The Wall", "Animals"])
+            self.assertRaises(AssertionError,
+                              in_rock_bands.some(["albums", "title"]).has, ["The Wall", "Animals"])
 
             in_rock_bands.some("members").has("Paice")
             in_rock_bands.some("members").has("Waters", "Barret")
             in_rock_bands.some("members").has(["Waters", "Barret"], ["Paice"])
-            self.assertRaises(AssertionError, in_rock_bands.some("members").has, ["Waters", "Paice"])
+            self.assertRaises(AssertionError,
+                              in_rock_bands.some("members").has, ["Waters", "Paice"])
 
             in_rock_bands.some().has({"band": "Pink Floyd"})
             in_rock_bands.some().has({"band": "Pink Floyd", "genre": "Psychedelic Rock"})
             in_rock_bands.some().has({"band": "Pink Floyd"}, {"genre": "Blues Rock"})
-            self.assertRaises(AssertionError,  in_rock_bands.some().has, {"band": "Pink Floyd", "genre": "Blues Rock"})
+            self.assertRaises(AssertionError,
+                              in_rock_bands.some().has, {"band": "Pink Floyd",
+                                                         "genre": "Blues Rock"})
 
     def test_every_has(self):
         with Assertable(self.numbers) as in_numbers:
@@ -391,24 +396,32 @@ class TestConssert(TestCase):
     def test_one_filter(self):
         with Assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.one([("band", "Pink Floyd"), "periods", 1963]).has("Formation")
-            in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has({1963: "Formation", 2005: "Reunion"})
+            in_rock_bands.one([("band", "Pink Floyd"),
+                               "periods"]).has({1963: "Formation", 2005: "Reunion"})
             in_rock_bands.one(["albums", ("title", "The Wall"), "year"]).is_(1979)
             in_rock_bands.one(["albums", ("title", "The Wall")]).has({"uk chart": 3})
             in_rock_bands.one(
-                ["albums", ("title", "The dark side of the moon"), "certifications", "United States"]).has("Diamond")
+                ["albums",
+                 ("title", "The dark side of the moon"),
+                 "certifications",
+                 "United States"]).has("Diamond")
 
     def test_some_has_some_of(self):
         with Assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has_some_of([1972, 2045])
             in_rock_bands.some("members").has_some_of(["Clapton", "Page"])
 
-            in_rock_bands.one([("band", "Pink Floyd"), "periods", 1963]).has_some_of(["Formation", "Bazinga"])
+            in_rock_bands.one([("band", "Pink Floyd"),
+                               "periods", 1963]).has_some_of(["Formation", "Bazinga"])
             self.assertRaises(AssertionError,
-                              in_rock_bands.one([("band", "Pink Floyd"), "periods", 1963]).has_some_of, "Formation", "!")
+                              in_rock_bands.one([("band", "Pink Floyd"),
+                                                 "periods", 1963]).has_some_of, "Formation", "!")
 
-            in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has_some_of({1963: "Formation", 2000: "!"})
+            in_rock_bands.one([("band", "Pink Floyd"),
+                               "periods"]).has_some_of({1963: "Formation", 2000: "!"})
             self.assertRaises(AssertionError,
-                              in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has_some_of, {1968: "!", 2000: "!"})
+                              in_rock_bands.one([("band", "Pink Floyd"),
+                                                 "periods"]).has_some_of, {1968: "!", 2000: "!"})
 
     def test_one_is(self):
         with Assertable(self.rock_bands) as in_rock_bands:
@@ -421,12 +434,16 @@ class TestConssert(TestCase):
                                                                         2005: "Reunion"})
             in_rock_bands.one([("band", "Cream"), "members"]).has("Clapton")
 
-            self.assertRaises(AssertionError, in_rock_bands.one([("band", "Cream"), "members"]).is_, "Clapton")
+            self.assertRaises(AssertionError, in_rock_bands.one([("band", "Cream"),
+                                                                 "members"]).is_, "Clapton")
             self.assertRaises(AssertionError,
-                              in_rock_bands.one([("band", "Pink Floyd"), "periods"]).is_, {1963: "Formation"})
+                              in_rock_bands.one([("band", "Pink Floyd"),
+                                                 "periods"]).is_, {1963: "Formation"})
 
             self.assertRaises(AssertionError,
-                              in_rock_bands.one([("band", "Pink Floyd"), "periods"]).has, {1968: "Fame", 2000: "!"})
+                              in_rock_bands.one([("band",
+                                                  "Pink Floyd"), "periods"]).has, {1968: "Fame",
+                                                                                   2000: "!"})
 
             self.assertRaises(AssertionError, in_rock_bands.one("albums year").is_, 1972)
             self.assertRaises(AssertionError, in_rock_bands.one("albums year").is_, 1973)
@@ -437,7 +454,8 @@ class TestConssert(TestCase):
             in_rock_bands.some("albums songs").is_(["Space truckin'", "Smoke on the water"])
             in_rock_bands.some("albums songs").is_ordered(["Space truckin'", "Smoke on the water"])
             self.assertRaises(AssertionError,
-                              in_rock_bands.some("albums songs").is_ordered, ["Smoke on the water", "Space truckin'"])
+                              in_rock_bands.some("albums songs").is_ordered,
+                              ["Smoke on the water", "Space truckin'"])
 
         with Assertable(self.numbers) as in_numbers:
             in_numbers("sequences primes").is_([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41])
@@ -465,7 +483,8 @@ class TestConssert(TestCase):
         with Assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.some("albums year").has_no_duplicates()
             in_rock_bands.every("genre").has_no_duplicates()
-            self.assertRaises(AssertionError, in_rock_bands.every_existent("albums year").has_no_duplicates)
+            self.assertRaises(AssertionError,
+                              in_rock_bands.every_existent("albums year").has_no_duplicates)
 
             in_rock_bands.every("albums *").has_no_duplicates()
             self.assertRaises(AssertionError, in_rock_bands.every("albums **").has_no_duplicates)
@@ -509,7 +528,9 @@ class TestConssert(TestCase):
             in_numbers.every("**").has(50, cmp=operator.lt)
             in_numbers.one("sequences primes").has(0, cmp=operator.eq, property=lambda x: x % 2)
             in_numbers.every("sequences *").has(29, cmp=operator.ge, property=max)
-            in_numbers.exactly(4, "sequences *").has(True, cmp=operator.eq, property=lambda x: x == sorted(x))
+            in_numbers.exactly(4, "sequences *").has(True,
+                                                     cmp=operator.eq,
+                                                     property=lambda x: x == sorted(x))
 
     def test_strictly_every(self):
         with Assertable(self.rock_bands) as in_rock_bands:
@@ -547,7 +568,9 @@ class TestConssert(TestCase):
             in_functional.one("Lisp", "year").is_(58)
             in_functional.one("Lisp", ["designer", "name"]).matches("John")
             in_functional.one(["Lisp", "designer"], "name").matches("John")
-            in_functional.one("*", [("type system", "static")], ["designer", "name"]).matches("Simon")
+            in_functional.one("*",
+                              [("type system", "static")],
+                              ["designer", "name"]).matches("Simon")
             in_functional.one(["*", ("type system", "static")], "designer", "name").matches("Simon")
 
     def test_booleans(self):
@@ -558,7 +581,13 @@ class TestConssert(TestCase):
             in_tricky_booleans.no('d').is_true()
 
     def test_logical_booleans(self):
-        with Assertable({'a': False, 'b': [], 'c': True, 'd': 0, 'e': 1, 'f': None, 'g': [2]}) as in_tricky_booleans:
+        with Assertable({'a': False,
+                         'b': [],
+                         'c': True,
+                         'd': 0,
+                         'e': 1,
+                         'f': None,
+                         'g': [2]}) as in_tricky_booleans:
             in_tricky_booleans.one('a').evals_false()
             in_tricky_booleans.one('b').evals_false()
             in_tricky_booleans.one('c').evals_true()
@@ -606,9 +635,12 @@ class TestConssert(TestCase):
             in_several_nested_dicts.one().has_some_of({'b': 20, 'c': {'z': 20}, 'd': {'y': 60}})
             in_several_nested_dicts.no().has_some_of({'b': 1, 'c': {'z': 13}, 'd': {'y': 63}})
             in_several_nested_dicts.one().has_some_of({'b': 2, 'c': {'z': 13}, 'd': {'y': 63}})
-            in_several_nested_dicts.one().has_some_of({'b': 2, 'c': {'z': 20}, 'd': {'y': 60, 'w': 700}})
-            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 10}, 'd': {'y': 70, 'w': 700}})
-            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 20, 'x': 100}, 'd': {'y': 80}})
+            in_several_nested_dicts.one().has_some_of({'b': 2, 'c': {'z': 20},
+                                                       'd': {'y': 60, 'w': 700}})
+            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 10},
+                                                       'd': {'y': 70, 'w': 700}})
+            in_several_nested_dicts.one().has_some_of({'b': 1, 'c': {'z': 20, 'x': 100},
+                                                       'd': {'y': 80}})
 
     def test_deep_nested_dict(self):
         r = {'z': 10, 'x': 100}
@@ -621,7 +653,8 @@ class TestConssert(TestCase):
                          'e': {'p': {'q': [r, s]}}}) as in_deep_nested_dict:
             in_deep_nested_dict.one().has({'a': 1, 'd': {'p': {'y': 40}}})
             in_deep_nested_dict.one().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': [r, s]}}})
-            in_deep_nested_dict.one().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.one().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400},
+                                                                        'q': {'u': 80, 'v': 800}}})
             in_deep_nested_dict.no().has({'a': 2, 'd': {'p': {'y': 40}}})
             in_deep_nested_dict.no().has({'a': 1, 'd': {'p': {'y': 50}}})
             in_deep_nested_dict.no().has({'a': 1, 'd': {'t': {'y': 40}}})
@@ -629,21 +662,34 @@ class TestConssert(TestCase):
             in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': [s]}}})
             in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': s}}})
             in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'e': {'p': {'q': {'y': 40}}}})
-            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 80, 'v': 800}}})
-            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 60, 'v': 800}}})
-            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 500}, 'q': {'u': 80, 'v': 800}}})
-            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400}, 'q': {'u': 90, 'v': 800}}})
-            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 70, 'w': 400}, 'q': {'u': 80, 'v': 1000}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400},
+                                                                       'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 400},
+                                                                       'q': {'u': 60, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 500},
+                                                                       'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 40, 'w': 400},
+                                                                       'q': {'u': 90, 'v': 800}}})
+            in_deep_nested_dict.no().has({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 70, 'w': 400},
+                                                                       'q': {'u': 80, 'v': 1000}}})
             in_deep_nested_dict.one().has_some_of({'a': 2, 'd': {'p': {'y': 40}}})
             in_deep_nested_dict.one().has_some_of({'a': 1, 'd': {'p': {'y': 50}}})
-            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}}, 'e': {'p': {'q': {'y': 50}}}})
-            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}}, 'd': {'p': {'y': 50, 'w': 500}, 'q': {'u': 90, 'v': 900}}})
-            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 50, 'w': 500}, 'q': {'u': 80, 'v': 900}}})
-            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}}, 'd': {'p': {'y': 40, 'w': 500}, 'q': {'u': 80, 'v': 800}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}},
+                                                   'e': {'p': {'q': {'y': 50}}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 10}},
+                                                   'd': {'p': {'y': 50, 'w': 500},
+                                                         'q': {'u': 90, 'v': 900}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}},
+                                                   'd': {'p': {'y': 50, 'w': 500},
+                                                         'q': {'u': 80, 'v': 900}}})
+            in_deep_nested_dict.one().has_some_of({'c': {'p': {'z': 20}},
+                                                   'd': {'p': {'y': 40, 'w': 500},
+                                                         'q': {'u': 80, 'v': 800}}})
             in_deep_nested_dict.no().has({'e': {'p': {'q': {'y': 40}}}})
             in_deep_nested_dict.one('e p q').has({'y': 40})
 
-    def test_object(self):
+    def test_object_to_dict(self):
+
         class Point:
             pass
 
@@ -662,6 +708,8 @@ class TestConssert(TestCase):
 
         with Assertable(segment) as in_segment:
             in_segment.one('bounds').has({'x': 1})
-            in_segment('bounds *').has([[3, 4]], cmp=operator.eq, property=lambda (pt1, pt2): map(operator.add, pt1, pt2))
+            in_segment('bounds *').has([[3, 4]],
+                                       cmp=operator.eq,
+                                       property=lambda (pt1, pt2): map(operator.add, pt1, pt2))
             in_segment.exactly(2, '**').is_(3)
             in_segment.one('bounds y').has_some_of([0, 8])
