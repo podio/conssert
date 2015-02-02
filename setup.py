@@ -4,10 +4,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="conssert",
-    version="0.2.9",
+    version="0.2.10",
     description="Content assertion library for Python",
     url="https://github.com/podio/conssert",
-    download_url="https://github.com/podio/conssert/tarball/0.2.9",
+    download_url="https://github.com/podio/conssert/tarball/0.2.10",
     author="Juan Alvarez",
     author_email="juan.afernandez@ymail.com",
     platforms=["any"],
