@@ -93,16 +93,20 @@ def to_tuples(col):
         return tuple(to_tuples(item) for item in col)
 
 
-def to_dict(obj):
+def to_dict(obj, visited=None):
     """
-    Recursively creates a dict from obj attributes and its values
+    Recursively creates a dict from obj attributes and its values, skipping private and callable attributes.
+    When a cycle is found, the visited node is replaced with an empty dict.
     """
+    visited = visited or []
     if is_list(obj) or is_tuple(obj) or is_set(obj):
-        return map(lambda x: to_dict(x), obj)
+        return map(lambda x: to_dict(x, visited), obj)
     elif hasattr(obj, '__dict__'):
-        return dict([(k, to_dict(v)) for k, v in vars(obj).items()])
+        return dict([(k, to_dict(v, visited + [(k, v)])) for k, v in vars(obj).items()
+                     if not k.startswith('_') and not callable(v) and not (k, v) in visited])
     elif is_dict(obj):
-        return dict([(k, to_dict(v)) for k, v in obj.items()])
+        return dict([(k, to_dict(v, visited + [(k, v)])) for k, v in obj.items()
+                     if not k.startswith('_') and not callable(v) and not (k, v) in visited])
     else:
         return obj
 

@@ -1,6 +1,5 @@
 from unittest import TestCase
-from conssert import Assertable
-from navigate import *
+from conssert import Assertable, to_dict
 
 
 class TestNavigate(TestCase):
@@ -48,3 +47,30 @@ class TestNavigate(TestCase):
             obj_as_dict.exactly(2, 'v c').has(3)
             obj_as_dict.one('y').has(0, {'r': {}})
             obj_as_dict.one('z b').evals_true()
+
+    def test_to_dict_detect_cycles(self):
+        class X:
+            pass
+
+        class Z:
+            pass
+
+        x = X()
+        z = Z()
+        x.z = z
+        z.x = x
+
+        with Assertable(x) as cyclic_graph:
+            cyclic_graph.one('z').is_({'x': {}})
+
+    def test_skip_privates_and_callables(self):
+        class X:
+            pass
+
+        x = X()
+        x.a = 1
+        x._b = 2
+        x.c = list.__add__
+
+        with Assertable(x) as xdict:
+            xdict().is_({'a': 1})
