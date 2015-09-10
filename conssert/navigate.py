@@ -106,7 +106,7 @@ def to_dict(obj, visited=None):
                      if not k.startswith('_') and not callable(v) and not (k, v) in visited])
     elif is_dict(obj):
         return dict([(k, to_dict(v, visited + [(k, v)])) for k, v in obj.items()
-                     if not k.startswith('_') and not callable(v) and not (k, v) in visited])
+                     if not (k, v) in visited])
     else:
         return obj
 
