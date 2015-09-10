@@ -378,6 +378,11 @@ class TestConssert(TestCase):
             in_numbers.every("sequences *").has([2, 5])
             self.assertRaises(AssertionError,  in_numbers.every("sequences *").has, 0)
 
+    def test_has_keys(self):
+        with Assertable(self.programming_languages) as programming_languages:
+            programming_languages().has_keys("functional", "procedural")
+            self.assertRaises(AssertionError,  programming_languages().has_keys, "literate")
+
     def test_no_has(self):
         with Assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.no("albums songs").has("Stairway to heaven")
@@ -478,6 +483,11 @@ class TestConssert(TestCase):
         with Assertable(self.rock_bands) as in_rock_bands:
             in_rock_bands.one(["albums", ("title", "The Wall"), "year"]).is_not(1981)
             in_rock_bands.one(["albums", ("title", "The Wall"), "title"]).is_not("Other")
+
+    def test_keys_are(self):
+        with Assertable(self.programming_languages) as programming_languages:
+            programming_languages().keys_are(["functional", "procedural", "object oriented"])
+            self.assertRaises(AssertionError,  programming_languages().keys_are, ["functional", "procedural"])
 
     def test_has_no_duplicates(self):
         with Assertable(self.rock_bands) as in_rock_bands:

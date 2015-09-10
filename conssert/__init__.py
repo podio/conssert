@@ -306,6 +306,13 @@ class Selector(object):
             self._has(item, options.get("cmp"), options.get("property", _identity), or_=True,
                       raw_obj=item)
 
+    def has_keys(self, *content):
+        """
+        Compares content against the selection keys using the selector rules.
+        The selection must be a dict.
+        """
+        self.has(*content, cmp=list.__contains__, property=lambda x: x.keys())
+
     def has_no_duplicates(self):
         """
         Asserts that there are no duplicates in the selection.
@@ -343,6 +350,14 @@ class Selector(object):
                 else len(re.findall(pattern, expr)) > 0
         for regex in content:
             self._has(re.compile(regex), cmp_fn=regex_check_fn, raw_obj=regex)
+
+    def keys_are(self, keys):
+        """
+        Compares keys against the selection keys using the selector rules.
+        The difference with 'has_keys' is that the 'keys' arguments in this method is a list with
+        all the keys expected in the selection dict.
+        """
+        self.has([sorted(keys)], cmp=operator.eq, property=lambda x: sorted(x.keys()), raw_obj=keys)
 
     def is_ordered(self, *content):
         for item in content:
