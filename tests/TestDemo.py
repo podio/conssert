@@ -306,3 +306,9 @@ class TestDemo(TestCase):
             #        'Alice'
             #
             # Not verified (expected = 3, got = 1)
+
+            with Assertable({'name': 'Alice',
+                             'country': 'UK',
+                             'knows_python': False}) as alice:
+                alice().has_keys('name', 'country')  # these are keys present in the dict
+                alice().keys_are(['name', 'country', 'knows_python'])  # these are *all* the keys in the dict

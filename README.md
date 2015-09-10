@@ -184,6 +184,13 @@ There are also a bunch of handy methods to match regular expressions, check dupl
         users.no('favourite color').is_('Yellow')     # no users have yellow as favourite color
         users.every('mails').has_no_duplicates()      # there are no duplicate mails
         users.every([('name', 'Bob'), 'mails']).matches("[^@]+@[^@]+\.[^@]+")  # every Bob's mail matches the regex
+        
+        with Assertable({'name': 'Alice',
+                 'country': 'UK',
+                 'knows_python': False}) as alice:
+        alice().has_keys('name', 'country')  # these are keys present in the dict
+        alice().keys_are(['name', 'country', 'knows_python'])  # these are *all* the keys in the dict
+
 ```
 
 
