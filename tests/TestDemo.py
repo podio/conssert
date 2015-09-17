@@ -113,11 +113,11 @@ class TestDemo(TestCase):
                               in_programming.every(["languages", "*", "functional", "type system"]).is_, "static")
             # Throws:
             #         AssertionError:
-            #         Selection on path ['languages', '*', 'functional', 'type system'] --->
+            #         Selection on the object under test with path ['languages', '*', 'functional', 'type system'] --->
             #
             #                 ['dynamic', 'static', 'dynamic']
             #
-            #         Compared with --->
+            #         Compared with assertion input --->
             #
             #                 'static'
             #
@@ -133,11 +133,11 @@ class TestDemo(TestCase):
                               in_programming.some(object_oriented_features).has, ["duck typing", "generics"])
             #Throws:
             #       AssertionError:
-            #       Selection on path ['languages', '*', 'object oriented', 'features'] --->
+            #       Selection on the object under test with path ['languages', '*', 'object oriented', 'features'] --->
             #
             #                 [['duck typing', 'GIL', 'multiple inheritance'], ['JIT compiler', 'generics']]
             #
-            #       Compared with --->
+            #       Compared with assertion input --->
             #
             #                 ['duck typing', 'generics']
             #
@@ -297,11 +297,11 @@ class TestDemo(TestCase):
 
             # users.every('name').is_('Alice')
             # AssertionError:
-            # Selection on path ['users', 'name'] --->
+            # Selection on the object under test with path ['users', 'name'] --->
             #
             #        ['Alice', 'Bob', 'Mette']
             #
-            # Compared with --->
+            # Compared with assertion input --->
             #
             #        'Alice'
             #

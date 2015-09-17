@@ -157,11 +157,11 @@ If a test fails, the exception will give you some valuable bits of information:
         users.every('name').is_('Alice')
         
         AssertionError:
-        Selection on path ['users', 'name'] --->
+        Selection on the object under test with path ['users', 'name'] --->
         
                ['Alice', 'Bob', 'Mette']
         
-        Compared with --->
+        Compared with assertion input --->
         
                'Alice'
         

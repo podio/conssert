@@ -256,11 +256,11 @@ class Selector(object):
     def _capture_err_state(self, val, custom_msg=""):
         raise AssertionError(
             """
-            Selection on path {} --->
+            Selection on the object under test with path {} --->
 
                     {}
 
-            Compared with --->
+            Compared with assertion input --->
 
                     {}
 
