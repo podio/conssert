@@ -428,9 +428,6 @@ class Selector(object):
 
     def _has(self, input_arg, cmp_fn=None, property_fn=_identity, or_=False, raw_obj=None):
         printable_obj = input_arg if raw_obj is None else raw_obj
-        if self._max_checks == 0:
-            # raises assertion error
-            self._capture_err_state(printable_obj)
 
         if not self._selection and self._selection is not self._log_selection:
             # second condition ensure that it is "consuming" the selection and not testing against
